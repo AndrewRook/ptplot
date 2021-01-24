@@ -184,19 +184,37 @@ def create_field(figure=None):
     field_numbers = sum(field_numbers, [])
 
     field_indicators = [
-        dict(
-            type="path",
-            path=f"M {xval - 3.2} 5.6 L {xval - 3.7} 5.85 L {xval - 3.2} 6.1 L {xval - 3.2} 5.7 Z",
-            **number_kwargs
-        )
-        for xval in number_x_location_mapping.keys()
+        [
+            dict(
+                type="path",
+                path=f"M {xval - 3.2} 5.2 L {xval - 3.7} 5.45 L {xval - 3.2} 5.7 L {xval - 3.2} 5.2 Z",
+                **number_kwargs
+            ),
+            dict(
+                type="path",
+                path=f"M {120 - xval + 3.6} 5.2 L {120 -xval + 4.1} 5.45 L {120 - xval + 3.6} 5.7 L {120 - xval + 3.6} 5.2 Z",
+                **number_kwargs
+            ),
+            dict(
+                type="path",
+                path=f"M {xval - 3.6} 48.5 L {xval - 4.1} 48.25 L {xval - 3.6} 48.0 L {xval - 3.6} 48.5 Z",
+                **number_kwargs
+            ),
+            dict(
+                type="path",
+                path=f"M {120 - xval + 3.2} 48.5 L {120 - xval + 3.7} 48.25 L {120 - xval + 3.2} 48.0 L {120 - xval + 3.2} 48.5 Z",
+                **number_kwargs
+            )
+        ]
+        for xval in [20, 30, 40, 50]
     ]
+    field_indicators = sum(field_indicators, [])
 
     figure.update_layout(
         xaxis_showgrid=False, yaxis_showgrid=False,  # remove grid lines
         xaxis_zeroline=False, yaxis_zeroline=False,  # remove axis lines
         plot_bgcolor="green",  # set the background color
-        yaxis_range=[-6, field_width + 6], xaxis_range=[-3, field_length + 3],  # set the range with a 2-yard buffer on each side
+        yaxis_range=[-5, field_width + 5], xaxis_range=[-3, field_length + 3],  # set the range with a 2-yard buffer on each side
         shapes=field_lines + field_numbers + field_indicators
     )
     figure.update_xaxes(showticklabels=False)
