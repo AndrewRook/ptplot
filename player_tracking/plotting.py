@@ -183,6 +183,7 @@ def create_field(figure=None):
     # Flatten
     field_numbers = sum(field_numbers, [])
 
+    # Numbers and arrows
     field_indicators = [
         [
             dict(
@@ -208,6 +209,7 @@ def create_field(figure=None):
         ]
         for xval in [20, 30, 40, 50]
     ]
+    # Flatten
     field_indicators = sum(field_indicators, [])
 
     figure.update_layout(
