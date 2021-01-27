@@ -1,5 +1,6 @@
 import dask.dataframe as dd
 import pandas as pd
+import warnings
 from typing import Union
 
 
@@ -48,20 +49,24 @@ def get_data_between_events(
         raise ValueError(
             f"{start_event} appeared in the data at {len(start_time)} timestamps! Must appear exactly once!"
         )
-    start_time = start_time[0]
+    #breakpoint()
+    # Just taking the zeroth index doesn't work with dask, so we iterate over the
+    # (hopefully very small) array and take the max instead:
+    start_time = start_time.max()
 
     end_time = timestamp_column[event_column == end_event].unique()
     if len(end_time) != 1:
         raise ValueError(
-            f"{end_event} appeared in the play data at {len(end_time)} timestamps! Must appear exactly once!"
+            f"{end_event} appeared in the data at {len(end_time)} timestamps! Must appear exactly once!"
         )
-    end_time = end_time[0]
+    end_time = end_time.max()
 
-    if end_time <= start_time:
+    good_data = play_data[timestamp_column.between(start_time, end_time)].copy()
+
+    if len(good_data) == 0:
         raise ValueError(
-            f"End time {end_time} does not occur after start time {start_time}!"
+            "No records identified! Check to make sure that your events are in the proper order and "
+            "appear in the data"
         )
 
-    good_data = play_data[timestamp_column.between(start_time, end_time)].copy(deep=True)
-
-    return good_data
+    return good_data.reset_index(drop=True)
