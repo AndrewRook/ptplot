@@ -14,8 +14,8 @@ requirements = [
     'numpy==1.19.5',
     'pandas==1.2.0',
     'plotly==4.14.3',
-    'svgpathtools==1.4.1'
-    'versioneer=0.19'
+    'svgpathtools==1.4.1',
+    'versioneer==0.19'
 ]
 
 dev_packages = ['flake8==3.8.4', 'pytest==6.2.1', 'pytest-cov==2.11.1']
