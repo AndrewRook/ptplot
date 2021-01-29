@@ -18,7 +18,7 @@ requirements = [
     'versioneer==0.19'
 ]
 
-dev_packages = ['flake8==3.8.4', 'pytest==6.2.1', 'pytest-cov==2.11.1']
+dev_packages = ['notebook==6.2.0', 'flake8==3.8.4', 'pytest==6.2.1', 'pytest-cov==2.11.1']
 
 extra_requirements = {'dev': dev_packages}
 
