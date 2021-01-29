@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   - dask=2021.1.0
+  - flake8=3.8.4
   - notebook=6.2.0
   - numpy=1.19.5
   - pandas=1.2.0

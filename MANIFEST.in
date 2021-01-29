@@ -1,2 +1,7 @@
 include versioneer.py
 include ptplot/_version.py
+
+include AUTHORS.rst
+include CONTRIBUTING.rst
+include LICENSE
+include README.md
