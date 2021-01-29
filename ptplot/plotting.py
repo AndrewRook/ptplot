@@ -1,7 +1,9 @@
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
 from svgpathtools import parse_path
+from typing import Callable, Union
 
 ZERO = parse_path(
     "M 1.19 2.751 Q 0.8 2.751 0.533 2.561 Q 0.265 2.371 0.133 2.056 Q 0 1.741 0 1.371 "
@@ -231,16 +233,61 @@ def plot_frame(
         x_column: str,
         y_column: str,
         name_column: str = None,
+        ball_identifier: Union[str, Callable] = None,
         home_away_column: str = None,
         team_column: str = None,
         uniform_number_column: str = None,
         fig=None
 ):
 
+    # First, set some defaults for the marker styling. We expect
+    # most of these to get overriden via the optional kwargs
+    marker_color = pd.Series(["gainsboro"] * len(data))
+    marker_edge_color = pd.Series(["darkslategray"] * len(data))
+    marker_symbol = pd.Series(["circle"] * len(data))
+    marker_width = pd.Series([2] * len(data))
+    marker_size = pd.Series([16] * len(data))
+
+    if uniform_number_column is None:
+        mode = "markers"
+        text = None
+    else:
+        mode = "markers+text"
+        text = data[uniform_number_column]
+        textfont_color = pd.Series(["black"] * len(data))
+
+    if home_away_column is not None and team_column is None:
+        is_home_team = (data[home_away_column].str.lower() == "home").values
+        marker_color[is_home_team] = "darkslategray"
+        marker_edge_color[is_home_team] = "gainsboro"
+        textfont_color[is_home_team] = "white"
+
+    if ball_identifier is not None:
+        try:
+            is_ball = ball_identifier(data)
+        except TypeError:
+            if name_column is None:
+                raise KeyError("If you don't pass a name_column, is_ball must be a function")
+            is_ball = (data[name_column] == ball_identifier).values
+    else:
+        is_ball = np.array([False] * len(data))
+
+    marker_color[is_ball] = "brown"
+    marker_edge_color[is_ball] = "black"
+    marker_symbol[is_ball] = "diamond-wide"
+    marker_width[is_ball] = 1
+    marker_size[is_ball] = 12
+
+
     if fig is None:
         fig = create_field()
+
     fig.add_trace(go.Scatter(
-        x=data[x_column], y=data[y_column], mode="markers",
-        marker={"size": 10, "color": "red"}
+        x=data[x_column], y=data[y_column], mode=mode,
+        text=text, textfont_size=9, textfont_family=["Gravitas One"], textfont_color=textfont_color,
+        marker={
+            "size": marker_size, "color": marker_color, "symbol": marker_symbol, "opacity": 1,
+            "line": {"width": marker_width, "color": marker_edge_color}
+        }
     ))
     return fig
