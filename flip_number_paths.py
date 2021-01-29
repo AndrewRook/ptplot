@@ -1,4 +1,3 @@
-from copy import deepcopy
 from svgpathtools import parse_path, Path, Line, Arc, QuadraticBezier
 
 # These numbers came from a text to svg converter
@@ -69,7 +68,7 @@ upside_down_five = parse_path(
 
 
 def flip_path(upside_down_path):
-    path = []#deepcopy(upside_down_path)
+    path = []
     _, _, min_y, max_y = upside_down_path.bbox()
     offset = max_y + min_y
     for segment in upside_down_path._segments:
@@ -112,4 +111,3 @@ if __name__ == "__main__":
     print(flip_path(upside_down_four).d())
     print("\nfive")
     print(flip_path(upside_down_five).d())
-
