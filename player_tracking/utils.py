@@ -1,3 +1,5 @@
+import dask.dataframe as dd
+import warnings
 
 
 class DaskCompatibilityWarning(UserWarning):
@@ -10,3 +12,12 @@ class DaskCompatibilityWarning(UserWarning):
     responsible for that checking themselves.
     """
     pass
+
+
+def warn_if_dask(input_dataframe):
+    if type(input_dataframe) == dd.DataFrame:
+        warnings.warn(
+            "Error checking suppressed with dask dataframes to prevent "
+            "unnecessary compute calls",
+            DaskCompatibilityWarning
+        )
