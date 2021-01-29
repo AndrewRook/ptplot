@@ -1,3 +1,4 @@
+import pandas as pd
 import plotly.graph_objects as go
 
 from svgpathtools import parse_path
@@ -130,7 +131,7 @@ def create_field(figure=None):
     field_length = 120
     field_width = 53.3
     # First, make the field border:
-    field_kwargs = {"line_width": 5, "line_color": "white"}
+    field_kwargs = {"line_width": 5, "line_color": "white", "layer": "below"}
     field_border = [
         make_hline(0, field_length, 0, **field_kwargs),
         make_hline(0, field_length, field_width, **field_kwargs),
@@ -139,7 +140,7 @@ def create_field(figure=None):
     ]
 
     # Now make the yard and hash lines:
-    line_kwargs = {"line_width": 2, "line_color": "white"}
+    line_kwargs = {"line_width": 2, "line_color": "white", "layer": "below"}
     five_yard_lines = [
         make_vline(0, field_width, 5 * i, **line_kwargs)
         for i in range(2, 23)
@@ -155,7 +156,7 @@ def create_field(figure=None):
 
     field_lines = field_border + five_yard_lines + one_yard_lines
 
-    number_kwargs = {"line_color": "white", "fillcolor": "white"}
+    number_kwargs = {"line_color": "white", "fillcolor": "white", "layer": "below"}
     number_x_location_mapping = {
         20: ONE,
         30: TWO,
@@ -215,7 +216,7 @@ def create_field(figure=None):
     figure.update_layout(
         xaxis_showgrid=False, yaxis_showgrid=False,  # remove grid lines
         xaxis_zeroline=False, yaxis_zeroline=False,  # remove axis lines
-        plot_bgcolor="green",  # set the background color
+        plot_bgcolor="rgb(62, 126, 0)",  # set the background color
         yaxis_range=[-5, field_width + 5], xaxis_range=[-3, field_length + 3],  # set the range with a 2-yard buffer on each side
         shapes=field_lines + field_numbers + field_indicators
     )
@@ -223,3 +224,23 @@ def create_field(figure=None):
     figure.update_yaxes(showticklabels=False)
 
     return figure
+
+
+def plot_frame(
+        data: pd.DataFrame,
+        x_column: str,
+        y_column: str,
+        name_column: str = None,
+        home_away_column: str = None,
+        team_column: str = None,
+        uniform_number_column: str = None,
+        fig=None
+):
+
+    if fig is None:
+        fig = create_field()
+    fig.add_trace(go.Scatter(
+        x=data[x_column], y=data[y_column], mode="markers",
+        marker={"size": 10, "color": "red"}
+    ))
+    return fig
