@@ -1,4 +1,4 @@
-name: player_tracking
+name: ptplot-dev
 channels:
   - conda-forge
   - defaults
@@ -14,3 +14,4 @@ dependencies:
   - python=3.8.6
   - pip:
       - svgpathtools==1.4.1
+      - versioneer=0.19
