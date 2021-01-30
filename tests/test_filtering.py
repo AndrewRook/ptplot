@@ -2,7 +2,7 @@ import dask
 import pandas as pd
 import pytest
 
-from player_tracking import filtering as ft
+from ptplot import filtering as ft
 
 
 class TestGetDataBetweenEvents:
