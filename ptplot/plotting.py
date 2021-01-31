@@ -141,6 +141,95 @@ def plot_frame(
     return fig
 
 
+def animate_play(
+        data: pd.DataFrame,
+        x_column: str,
+        y_column: str,
+        frame_column: str,
+        hover_text_generator: Union[None, Callable] = None,
+        ball_identifier: Union[None, Callable] = None,
+        home_away_identifier: Union[None, Callable] = None,
+        team_column: str = None,
+        uniform_number_column: str = None,
+        fig=None,
+        team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS
+):
+    # TODO: Same code exists in plot_frame: refactor
+    (
+        marker_color, marker_edge_color, marker_textfont_color, marker_width, marker_size, marker_symbol
+    ) = get_style_information(data, home_away_identifier, team_column, team_color_mapping)
+
+    if uniform_number_column is None:
+        mode = "markers"
+        text = None
+    else:
+        mode = "markers+text"
+        text = data[uniform_number_column]
+
+    hover_text = "" if not hover_text_generator else hover_text_generator(data)
+
+    if ball_identifier is not None:
+        is_ball = ball_identifier(data)
+    else:
+        is_ball = np.array([False] * len(data))
+
+    marker_color[is_ball] = "brown"
+    marker_edge_color[is_ball] = "black"
+    marker_symbol[is_ball] = "diamond-wide"
+    marker_width[is_ball] = 1
+    marker_size[is_ball] = 12
+
+    if fig is None:
+        fig = create_field()
+
+    frames = np.sort(data[frame_column].unique())
+    fig.add_trace(go.Scatter(
+        x=data.loc[data[frame_column] == frames[0], x_column],
+        y=data.loc[data[frame_column] == frames[0], y_column],
+        mode=mode,
+        hovertext=hover_text,
+        text=text, textfont_size=9, textfont_family=["Gravitas One"], textfont_color=marker_textfont_color,
+        marker={
+            "size": marker_size, "color": marker_color, "symbol": marker_symbol, "opacity": 1,
+            "line": {"width": marker_width, "color": marker_edge_color}
+        }
+    ))
+    frame_plots = []
+    #test_x = data.loc[data[frame_column] == frames[0], x_column]
+    #test_y = data.loc[data[frame_column] == frames[0], y_column]
+    for frame in frames[::1]:
+        frame_plots.append(
+            go.Frame(data=[go.Scatter(
+                x=data.loc[data[frame_column] == frame, x_column],
+                y=data.loc[data[frame_column] == frame, y_column],
+                #x=test_x,
+                #y=test_y,
+                #mode=mode,
+                #hovertext=hover_text,
+                #text=text, textfont_size=9, textfont_family=["Gravitas One"], textfont_color=marker_textfont_color,
+                #marker={
+                #    "size": marker_size, "color": marker_color, "symbol": marker_symbol, "opacity": 1,
+                #    "line": {"width": marker_width, "color": marker_edge_color}
+                #}
+            )])
+        )
+        # if frame > 30:
+        #     break
+    fig.frames = frame_plots
+
+    fig.update_layout(
+         updatemenus=[dict(
+             type="buttons",
+             buttons=[dict(
+                 label="Play",
+                 method="animate",
+                 args=[None]
+             )]
+         )]
+    )
+    return fig
+
+
 def lookup_team_colors(
         team_abbreviations: Sequence,
         lookup_table: Dict[str, TeamColors],
