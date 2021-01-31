@@ -20,7 +20,7 @@ TEAM_COLORS = {
         ["white", "rgb(200, 56, 3)", "rgb(11, 22, 42)"]
     ),
     "GB": TeamColors(
-        ["rgb(28, 45, 37)", "rgb(238, 173, 30), white"],
+        ["rgb(238, 173, 30)","rgb(28, 45, 37)", "black"],
         ["white", "rgb(28, 45, 37)", "rgb(238, 173, 30)"]
     ),
     # "NE": TeamColors(
