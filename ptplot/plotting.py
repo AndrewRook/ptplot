@@ -154,93 +154,60 @@ def animate_play(
         fig=None,
         team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS
 ):
-    # TODO: Same code exists in plot_frame: refactor
-    (
-        marker_color, marker_edge_color, marker_textfont_color, marker_width, marker_size, marker_symbol
-    ) = get_style_information(data, home_away_identifier, team_column, team_color_mapping)
+    """
+    Animate a play.
 
-    if uniform_number_column is None:
-        mode = "markers"
-        text = None
-    else:
-        mode = "markers+text"
-        text = data[uniform_number_column]
+    .. Warning::
+        This function assumes that the ordering of the players is the same in every
+        frame. That is if the QB is the first row of frame 1, the QB is also the first
+        row of frame 2+.
 
-    hover_text = "" if not hover_text_generator else hover_text_generator(data)
+    Parameters
+    ----------
+    data
+    x_column
+    y_column
+    frame_column
+    hover_text_generator
+    ball_identifier
+    home_away_identifier
+    team_column
+    uniform_number_column
+    fig
+    team_color_mapping
 
-    if ball_identifier is not None:
-        is_ball = ball_identifier(data)
-    else:
-        is_ball = np.array([False] * len(data))
+    Returns
+    -------
 
-    marker_color[is_ball] = "brown"
-    marker_edge_color[is_ball] = "black"
-    marker_symbol[is_ball] = "diamond-wide"
-    marker_width[is_ball] = 1
-    marker_size[is_ball] = 12
+    """
+    frame_groups = data.groupby(frame_column)
+    # This abuses the fact that groupby sorts the grouping column
+    first_frame = frame_groups.get_group(data[frame_column].min())
 
-    if fig is None:
-        fig = create_field()
+    # Use the first frame to set up all the marker stylings
+    fig = plot_frame(
+        first_frame, x_column, y_column,
+        hover_text_generator=hover_text_generator,
+        ball_identifier=ball_identifier,
+        home_away_identifier=home_away_identifier,
+        team_column=team_column,
+        uniform_number_column=uniform_number_column,
+        fig=fig,
+        team_color_mapping=team_color_mapping
+    )
 
-    frames = np.sort(data[frame_column].unique())
-    fig.add_trace(go.Scatter(
-        x=data.loc[data[frame_column] == frames[0], x_column],
-        y=data.loc[data[frame_column] == frames[0], y_column],
-        mode=mode,
-        hovertext=hover_text,
-        text=text, textfont_size=9, textfont_family=["Gravitas One"], textfont_color=marker_textfont_color,
-        marker={
-            "size": marker_size, "color": marker_color, "symbol": marker_symbol, "opacity": 1,
-            "line": {"width": marker_width, "color": marker_edge_color}
-        }
-    ))
     frame_plots = []
-    #test_x = data.loc[data[frame_column] == frames[0], x_column]
-    #test_y = data.loc[data[frame_column] == frames[0], y_column]
-    for frame in frames:
+    for frame_id, frame_data in frame_groups:
         frame_plots.append(
             go.Frame(
                 data=[go.Scatter(
-                    x=data.loc[data[frame_column] == frame, x_column],
-                    y=data.loc[data[frame_column] == frame, y_column]
-                    #x=test_x,
-                    #y=test_y,
-                    #mode=mode,
-                    #hovertext=hover_text,
-                    #text=text, textfont_size=9, textfont_family=["Gravitas One"], textfont_color=marker_textfont_color,
-                    #marker={
-                    #    "size": marker_size, "color": marker_color, "symbol": marker_symbol, "opacity": 1,
-                    #    "line": {"width": marker_width, "color": marker_edge_color}
-                    #}
+                    x=frame_data[x_column],
+                    y=frame_data[y_column]
                 )],
-                name=str(frame)
+                name=str(frame_id)
             )
         )
     fig.frames = frame_plots
-
-    sliders = [
-        {
-            "len": 0.7,
-            "x": 0.2,
-            "y": 0.05,
-            "steps": [
-                {
-                    "args": [
-                        [frame.name],
-                        {
-                            "frame": {"duration": 100},
-                            "mode": "immediate",
-                            "fromcurrent": True,
-                            "transition": {"duration": 100, "easing": "cubic-out"},
-                        }
-                    ],
-                    "label": str(i),
-                    "method": "animate",
-                }
-                for i, frame in enumerate(fig.frames)
-            ],
-        }
-    ]
 
     fig.update_layout(
          updatemenus=[dict(
@@ -271,9 +238,43 @@ def animate_play(
                  }
              ]
          )],
-         sliders=sliders
+         sliders=_make_sliders([frame.name for frame in fig.frames])
     )
     return fig
+
+
+def _make_sliders(frame_names, slider_labels=None, **slider_kwargs):
+    if "steps" in slider_kwargs:
+        raise NotImplementedError("Cannot overwrite arguments in the slider steps")
+    slider_steps = [
+        {
+            "args": [
+                [frame_name],
+                {
+                    "frame": {"duration": 100},
+                    "mode": "immediate",
+                    "fromcurrent": True,
+                    "transition": {"duration": 100, "easing": "cubic-out"}
+                }
+            ],
+            "label": str(i) if slider_labels is None else slider_labels[i],
+            "method": "animate"
+        }
+        for i, frame_name in enumerate(frame_names)
+    ]
+
+    slider_kwargs["len"] = slider_kwargs.get("len", 0.7)
+    slider_kwargs["x"] = slider_kwargs.get("x", 0.2)
+    slider_kwargs["y"] = slider_kwargs.get("y", 0.05)
+
+    sliders = [
+        {
+            **slider_kwargs,
+            "steps": slider_steps
+        }
+    ]
+
+    return sliders
 
 
 def lookup_team_colors(
