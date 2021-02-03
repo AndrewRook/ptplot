@@ -192,5 +192,5 @@ def _make_field_lines_markers():
     return field_lines + field_numbers + field_indicators
 
 FIELD = Field(
-    FIELD_LENGTH, FIELD_WIDTH, _make_field_lines_markers(), "rgb(62, 126, 0)"
+    FIELD_LENGTH, FIELD_WIDTH, _make_field_lines_markers(), "rgb(195,217,192)" #"rgb(62, 126, 0)"
 )

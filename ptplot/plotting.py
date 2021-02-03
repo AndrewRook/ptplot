@@ -197,35 +197,81 @@ def animate_play(
     frame_plots = []
     #test_x = data.loc[data[frame_column] == frames[0], x_column]
     #test_y = data.loc[data[frame_column] == frames[0], y_column]
-    for frame in frames[::1]:
+    for frame in frames:
         frame_plots.append(
-            go.Frame(data=[go.Scatter(
-                x=data.loc[data[frame_column] == frame, x_column],
-                y=data.loc[data[frame_column] == frame, y_column],
-                #x=test_x,
-                #y=test_y,
-                #mode=mode,
-                #hovertext=hover_text,
-                #text=text, textfont_size=9, textfont_family=["Gravitas One"], textfont_color=marker_textfont_color,
-                #marker={
-                #    "size": marker_size, "color": marker_color, "symbol": marker_symbol, "opacity": 1,
-                #    "line": {"width": marker_width, "color": marker_edge_color}
-                #}
-            )])
+            go.Frame(
+                data=[go.Scatter(
+                    x=data.loc[data[frame_column] == frame, x_column],
+                    y=data.loc[data[frame_column] == frame, y_column]
+                    #x=test_x,
+                    #y=test_y,
+                    #mode=mode,
+                    #hovertext=hover_text,
+                    #text=text, textfont_size=9, textfont_family=["Gravitas One"], textfont_color=marker_textfont_color,
+                    #marker={
+                    #    "size": marker_size, "color": marker_color, "symbol": marker_symbol, "opacity": 1,
+                    #    "line": {"width": marker_width, "color": marker_edge_color}
+                    #}
+                )],
+                name=str(frame)
+            )
         )
-        # if frame > 30:
-        #     break
     fig.frames = frame_plots
+
+    sliders = [
+        {
+            "len": 0.7,
+            "x": 0.2,
+            "y": 0.05,
+            "steps": [
+                {
+                    "args": [
+                        [frame.name],
+                        {
+                            "frame": {"duration": 100},
+                            "mode": "immediate",
+                            "fromcurrent": True,
+                            "transition": {"duration": 100, "easing": "cubic-out"},
+                        }
+                    ],
+                    "label": str(i),
+                    "method": "animate",
+                }
+                for i, frame in enumerate(fig.frames)
+            ],
+        }
+    ]
 
     fig.update_layout(
          updatemenus=[dict(
              type="buttons",
-             buttons=[dict(
-                 label="Play",
-                 method="animate",
-                 args=[None]
-             )]
-         )]
+             direction="left",
+             yanchor="bottom",
+             xanchor="left",
+             x=0.05,
+             y=-0.17,
+             buttons=[
+                 dict(
+                     label="Play",
+                     method="animate",
+                     args=[
+                         None, {
+                             "frame": {"duration": 100, "redraw": False},
+                             "fromcurrent": True,
+                         }
+                     ],
+
+                 ),
+                 {
+                     "args": [[None], {"frame": {"duration": 0, "redraw": False},
+                                       "mode": "immediate",
+                                       "transition": {"duration": 0}}],
+                     "label": "Pause",
+                     "method": "animate"
+                 }
+             ]
+         )],
+         sliders=sliders
     )
     return fig
 
