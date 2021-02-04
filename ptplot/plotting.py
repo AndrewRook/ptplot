@@ -152,7 +152,8 @@ def animate_play(
         team_column: str = None,
         uniform_number_column: str = None,
         fig=None,
-        team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS
+        team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
+        slider_label_generator: Union[None, Callable] = None
 ):
     """
     Animate a play.
@@ -175,13 +176,19 @@ def animate_play(
     uniform_number_column
     fig
     team_color_mapping
+    slider_label_generator
 
     Returns
     -------
 
     """
     frame_groups = data.groupby(frame_column)
+    slider_labels = [
+        frame_number if slider_label_generator is None else slider_label_generator(frame_data)
+        for frame_number, frame_data in frame_groups
+    ]
     # This abuses the fact that groupby sorts the grouping column
+    # in ascending order by default
     first_frame = frame_groups.get_group(data[frame_column].min())
 
     # Use the first frame to set up all the marker stylings
@@ -196,6 +203,7 @@ def animate_play(
         team_color_mapping=team_color_mapping
     )
 
+    # Make the animation frames
     frame_plots = []
     for frame_id, frame_data in frame_groups:
         frame_plots.append(
@@ -209,6 +217,7 @@ def animate_play(
         )
     fig.frames = frame_plots
 
+    # Add animation controls
     fig.update_layout(
          updatemenus=[dict(
              type="buttons",
@@ -238,12 +247,14 @@ def animate_play(
                  }
              ]
          )],
-         sliders=_make_sliders([frame.name for frame in fig.frames])
+         sliders=_make_sliders([frame.name for frame in fig.frames], slider_labels)
     )
     return fig
 
 
-def _make_sliders(frame_names, slider_labels=None, **slider_kwargs):
+def _make_sliders(frame_names: Sequence, slider_labels: Sequence, **slider_kwargs):
+    if len(frame_names) != len(slider_labels):
+        raise IndexError("Frame names and slider labels must have same length")
     if "steps" in slider_kwargs:
         raise NotImplementedError("Cannot overwrite arguments in the slider steps")
     slider_steps = [
@@ -257,7 +268,7 @@ def _make_sliders(frame_names, slider_labels=None, **slider_kwargs):
                     "transition": {"duration": 100, "easing": "cubic-out"}
                 }
             ],
-            "label": str(i) if slider_labels is None else slider_labels[i],
+            "label": slider_labels[i],
             "method": "animate"
         }
         for i, frame_name in enumerate(frame_names)

@@ -2,7 +2,7 @@
 
 from svgpathtools import parse_path
 
-from ..utils import get_path_midpoint, make_vline, make_hline
+from ..utilities import get_path_midpoint, make_vline, make_hline
 from .core import Field
 
 FIELD_LENGTH = 120

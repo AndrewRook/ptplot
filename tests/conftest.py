@@ -1,6 +1,5 @@
 import dask.dataframe as dd
 import functools
-import pandas as pd
 import pytest
 
 

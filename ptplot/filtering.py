@@ -3,7 +3,7 @@ import pandas as pd
 
 from typing import Union
 
-from .utils import warn_if_dask
+from .utilities import warn_if_dask
 
 
 def get_data_between_events(

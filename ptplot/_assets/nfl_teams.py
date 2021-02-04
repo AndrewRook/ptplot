@@ -1,11 +1,4 @@
-from dataclasses import dataclass
-
-from typing import Sequence
-
-@dataclass
-class TeamColors:
-    home: Sequence[str]
-    away: Sequence[str]
+from .core import TeamColors
 
 
 TEAM_COLORS = {

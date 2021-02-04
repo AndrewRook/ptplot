@@ -10,3 +10,9 @@ class Field:
     background_color: str
     length_padding: float = 3
     width_padding: float = 5
+
+
+@dataclass
+class TeamColors:
+    home: Sequence[str]
+    away: Sequence[str]
