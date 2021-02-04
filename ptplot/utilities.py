@@ -1,4 +1,5 @@
 import dask.dataframe as dd
+import numpy as np
 import warnings
 
 
@@ -48,3 +49,18 @@ def make_hline(x0, x1, y, **kwargs):
         x0=x0, x1=x1,
         **kwargs
     )
+
+
+def generate_time_elapsed_labels(time_zeropoint, time_column_name, formatting="{: .2f} s"):
+    """Create a function that can be used in plotting animations to show time elapsed compared
+    to a user-defined zeropoint.
+    """
+    def time_elapsed_function(frame_data):
+        frame_times = frame_data[time_column_name]
+        max_frame_time = frame_times.max()
+        min_frame_time = frame_times.min()
+        if max_frame_time != min_frame_time:
+            raise ValueError(f"Frame has multiple times: {min_frame_time}, {max_frame_time}")
+        time_elapsed = (max_frame_time - time_zeropoint) / np.timedelta64(1, 's')
+        return formatting.format(time_elapsed)
+    return time_elapsed_function
