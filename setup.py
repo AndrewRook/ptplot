@@ -18,12 +18,15 @@ requirements = [
     'versioneer==0.19'
 ]
 
-dev_packages = ['notebook==6.2.0', 'flake8==3.8.4', 'pytest==6.2.1', 'pytest-cov==2.11.1']
+dev_packages = [
+    'notebook==6.2.0', 'flake8==3.8.4', 'pytest==6.2.1', 'pytest-cov==2.11.1',
+    'tox==3.21.4', 'tox-conda==0.7.1'
+]
 
 extra_requirements = {'dev': dev_packages}
 
 setup(
-    author="Andrew Schechtman-Rook",
+    author='Andrew Schechtman-Rook',
     author_email='footballastronomer@gmail.com',
     python_requires='>=3.7',
     classifiers=[
@@ -37,10 +40,10 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     cmdclass=versioneer.get_cmdclass(),
-    description="Make beautiful plots of player tracking data",
+    description='Make beautiful plots of player tracking data',
     extras_require=extra_requirements,
     install_requires=requirements,
-    license="GNU General Public License v3",
+    license='GNU General Public License v3',
     long_description=readme,
     include_package_data=True,
     keywords='ptplot',

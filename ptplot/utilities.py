@@ -2,6 +2,7 @@ import dask.dataframe as dd
 import numpy as np
 import warnings
 
+from typing import Sequence, Union
 
 class DaskCompatibilityWarning(UserWarning):
     """
@@ -64,3 +65,21 @@ def generate_time_elapsed_labels(time_zeropoint, time_column_name, formatting="{
         time_elapsed = (max_frame_time - time_zeropoint) / np.timedelta64(1, 's')
         return formatting.format(time_elapsed)
     return time_elapsed_function
+
+def generate_labels_from_multiple_columns(
+        columns: Sequence[str],
+        column_formatting: Union[Sequence[str], None] = None,
+        separator: str = " ",
+        na_rep: Union[str, None] = None
+):
+    if column_formatting is not None and len(columns) != len(column_formatting):
+        raise IndexError("If column_formatting is used, must have the same length as columns")
+    if column_formatting is None:
+        column_formatting = [None] * len(columns)
+
+    def column_concat_function(data):
+        string_columns = [
+            data[column].astype(str) if formatter is None else data[column].map(formatter.format)
+            for column, formatter in zip(columns, column_formatting)
+        ]
+        # TODO: functools.reduce on the str.cat function
