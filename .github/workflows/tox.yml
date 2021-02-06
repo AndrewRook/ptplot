@@ -12,9 +12,9 @@ jobs:
         shell: bash -l {0}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@5a4ac90  # v2.3.4
     - name: Set up conda
-      uses: conda-incubator/setup-miniconda@v2
+      uses: conda-incubator/setup-miniconda@73b9a80  # v2.0.1
       with:
         auto-activate-base: true
         activate-environment: ""
@@ -28,6 +28,9 @@ jobs:
     - name: conda list
       run: |
          conda list
-    - name: Test with tox
+    - name: Test with tox - conda
       run: |
-        tox -c tox.ini
+        tox -c tox-conda.ini
+    - name: Test with tox - pip
+      run: |
+        tox -c tox-pip.ini
