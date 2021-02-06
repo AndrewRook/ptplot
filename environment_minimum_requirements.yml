@@ -13,7 +13,6 @@ dependencies:
   - pytest==6.2.1
   - pytest-cov==2.11.1
   - tox==3.21.4
-  - tox-conda==0.7.1
   - pip:
       - svgpathtools==1.4.1
       - versioneer==0.19

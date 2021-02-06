@@ -1,6 +1,10 @@
 include versioneer.py
 include ptplot/_version.py
 
+include environment.yml
+include environment_minimum_requirements.yml
+include parse_envs.py
+
 include AUTHORS.rst
 include CONTRIBUTING.rst
 include LICENSE

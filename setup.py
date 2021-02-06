@@ -2,28 +2,25 @@
 
 """The setup script."""
 import versioneer
+import parse_envs
 
 from setuptools import setup, find_packages
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
-# TODO: Coordinate with environment.yml
-requirements = [
-    'dask[dataframe]==2021.1.0',
-    'numpy==1.19.5',
-    'pandas==1.2.0',
-    'plotly==4.14.3',
-    'svgpathtools==1.4.1',
-    'versioneer==0.19'
-]
+extras = {
+    'dev': [
+        'notebook', 'flake8', 'pytest', 'pytest-cov', 'tox'
+    ]
+}
 
-dev_packages = [
-    'notebook==6.2.0', 'flake8==3.8.4', 'pytest==6.2.1', 'pytest-cov==2.11.1',
-    'tox==3.21.4'
-]
-
-extra_requirements = {'dev': dev_packages}
+requirements, extra_requirements = parse_envs.parse_conda_envs(
+    "environment_minimum_requirements.yml",
+    "environment.yml",
+    optional_packages=extras,
+    package_modifiers={'dask': 'dataframe'}
+)
 
 setup(
     author='Andrew Schechtman-Rook',
