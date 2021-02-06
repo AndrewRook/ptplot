@@ -3,18 +3,16 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - dask=2021.1.0
-  - flake8=3.8.4
-  - notebook=6.2.0
-  - numpy=1.19.5
-  - pandas=1.2.0
-  - pip=20.3.3
-  - plotly=4.14.3
-  - pytest=6.2.1
-  - pytest-cov=2.11.1
-  - python=3.8.6
-  - tox=3.21.4
-  - tox-conda=0.7.1
+  - dask
+  - flake8
+  - notebook
+  - numpy
+  - pandas
+  - pip
+  - plotly
+  - pytest
+  - pytest-cov
+  - tox
   - pip:
-      - svgpathtools==1.4.1
-      - versioneer==0.19
+      - svgpathtools
+      - versioneer

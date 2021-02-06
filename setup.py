@@ -20,7 +20,7 @@ requirements = [
 
 dev_packages = [
     'notebook==6.2.0', 'flake8==3.8.4', 'pytest==6.2.1', 'pytest-cov==2.11.1',
-    'tox==3.21.4', 'tox-conda==0.7.1'
+    'tox==3.21.4'
 ]
 
 extra_requirements = {'dev': dev_packages}
