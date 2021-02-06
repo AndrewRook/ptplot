@@ -19,6 +19,12 @@ jobs:
     - name: Install tox
       run: |
         conda install tox
+    - name: conda info
+      run: |
+         conda info -e
+    - name: conda list
+      run: |
+         conda list
     - name: Test with tox
       run: |
         tox -c tox.ini
