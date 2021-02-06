@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - black==20.8b1
   - dask==2021.1.0
   - flake8==3.8.4
   - notebook==6.2.0

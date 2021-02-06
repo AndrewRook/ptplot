@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from typing import Sequence
 
+
 @dataclass
 class Field:
     length: float

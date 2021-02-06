@@ -103,8 +103,9 @@ FIELD_NUMBER_PATHS = {
         "Q 1.14,1.5650000000000002 0.845,1.5650000000000002 Q 0.71,1.5650000000000002 0.613,1.5220000000000002 "
         "Q 0.515,1.4800000000000002 0.405,1.4000000000000001 Q 0.34,1.3550000000000002 0.298,1.332 "
         "Q 0.255,1.3100000000000003 0.215,1.3100000000000003 Q 0.135,1.3100000000000003 0.135,1.45 Z"
-    )
+    ),
 }
+
 
 def _make_field_lines_markers():
     # First, make the field border:
@@ -113,17 +114,14 @@ def _make_field_lines_markers():
         make_hline(0, FIELD_LENGTH, 0, **field_kwargs),
         make_hline(0, FIELD_LENGTH, FIELD_WIDTH, **field_kwargs),
         make_vline(0, FIELD_WIDTH, 0, **field_kwargs),
-        make_vline(0, FIELD_WIDTH, FIELD_LENGTH, **field_kwargs)
+        make_vline(0, FIELD_WIDTH, FIELD_LENGTH, **field_kwargs),
     ]
 
     # Now make the yard and hash lines:
     line_kwargs = {"line_width": 2, "line_color": "white", "layer": "below"}
-    five_yard_lines = [
-        make_vline(0, FIELD_WIDTH, 5 * i, **line_kwargs)
-        for i in range(2, 23)
-    ]
-    hash_width = 2 / 3 # Hashes are 2/3rds of a yard
-    hash_length = 6 + 6/36 # six yards, six inches
+    five_yard_lines = [make_vline(0, FIELD_WIDTH, 5 * i, **line_kwargs) for i in range(2, 23)]
+    hash_width = 2 / 3  # Hashes are 2/3rds of a yard
+    hash_length = 6 + 6 / 36  # six yards, six inches
     one_yard_lines = [
         make_vline(w, w + hash_width, i, **line_kwargs)
         for i in range(10, 111)
@@ -143,7 +141,7 @@ def _make_field_lines_markers():
         70: FIELD_NUMBER_PATHS["four"],
         80: FIELD_NUMBER_PATHS["three"],
         90: FIELD_NUMBER_PATHS["two"],
-        100: FIELD_NUMBER_PATHS["one"]
+        100: FIELD_NUMBER_PATHS["one"],
     }
     field_numbers = [
         [
@@ -153,8 +151,8 @@ def _make_field_lines_markers():
             dict(
                 type="path",
                 path=value.rotated(180, get_path_midpoint(value)).translated(key + 0.5 + 47j).d(),
-                **number_kwargs
-            )
+                **number_kwargs,
+            ),
         ]
         for key, value in number_x_location_mapping.items()
     ]
@@ -167,23 +165,23 @@ def _make_field_lines_markers():
             dict(
                 type="path",
                 path=f"M {xval - 3.2} 5.2 L {xval - 3.7} 5.45 L {xval - 3.2} 5.7 L {xval - 3.2} 5.2 Z",
-                **number_kwargs
+                **number_kwargs,
             ),
             dict(
                 type="path",
                 path=f"M {120 - xval + 3.6} 5.2 L {120 -xval + 4.1} 5.45 L {120 - xval + 3.6} 5.7 L {120 - xval + 3.6} 5.2 Z",
-                **number_kwargs
+                **number_kwargs,
             ),
             dict(
                 type="path",
                 path=f"M {xval - 3.6} 48.5 L {xval - 4.1} 48.25 L {xval - 3.6} 48.0 L {xval - 3.6} 48.5 Z",
-                **number_kwargs
+                **number_kwargs,
             ),
             dict(
                 type="path",
                 path=f"M {120 - xval + 3.2} 48.5 L {120 - xval + 3.7} 48.25 L {120 - xval + 3.2} 48.0 L {120 - xval + 3.2} 48.5 Z",
-                **number_kwargs
-            )
+                **number_kwargs,
+            ),
         ]
         for xval in [20, 30, 40, 50]
     ]
@@ -191,6 +189,5 @@ def _make_field_lines_markers():
     field_indicators = sum(field_indicators, [])
     return field_lines + field_numbers + field_indicators
 
-FIELD = Field(
-    FIELD_LENGTH, FIELD_WIDTH, _make_field_lines_markers(), "rgb(195,217,192)" #"rgb(62, 126, 0)"
-)
+
+FIELD = Field(FIELD_LENGTH, FIELD_WIDTH, _make_field_lines_markers(), "rgb(195,217,192)")  # "rgb(62, 126, 0)"

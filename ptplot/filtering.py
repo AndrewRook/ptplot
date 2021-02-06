@@ -7,11 +7,12 @@ from .utilities import warn_if_dask
 
 
 def get_data_between_events(
-        play_data: Union[pd.DataFrame, dd.DataFrame],
-        start_event: Union[str, int],
-        end_event: Union[str, int],
-        event_column: str,
-        timestamp_column: str):
+    play_data: Union[pd.DataFrame, dd.DataFrame],
+    start_event: Union[str, int],
+    end_event: Union[str, int],
+    event_column: str,
+    timestamp_column: str,
+):
     """
     Filter a dataframe to only have data between two events
 
@@ -29,7 +30,7 @@ def get_data_between_events(
     """
     warn_if_dask(play_data)
 
-    event_data= play_data[event_column]
+    event_data = play_data[event_column]
 
     timestamp_data = play_data[timestamp_column]
 

@@ -11,7 +11,7 @@ with open('README.md') as readme_file:
 
 extras = {
     'dev': [
-        'notebook', 'flake8', 'pytest', 'pytest-cov', 'tox'
+        'black','notebook', 'flake8', 'pytest', 'pytest-cov', 'tox'
     ]
 }
 
