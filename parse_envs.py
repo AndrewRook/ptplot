@@ -86,7 +86,7 @@ def _parse_conda_env_file(env_filename):
                 if dependency_line == "-pip:":
                     continue
                 split_dependency = re.match(
-                    r"-([^=><]+)(([=><]{1,2})([.\d]+$)|$)",
+                    r"-([^=><]+)(([=><]{1,2})([.\w]+$)|$)",
                     # (package_name, _, dependency_kind|None, dependency_version|None)
                     dependency_line
                 ).groups()
