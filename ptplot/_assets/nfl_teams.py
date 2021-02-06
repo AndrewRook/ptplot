@@ -74,6 +74,10 @@ TEAM_COLORS = {
         ["rgb(0, 21, 50)", "rgb(134, 109, 75)", "white"],
         ["white", "rgb(134, 109, 75)", "rgb(0, 21, 50)"]
     ),
+    "LV": TeamColors(
+        ["black", "rgb(166, 174, 176)", "white"],
+        ["white", "rgb(166, 174, 176)", "black"]
+    ),
     "MIA": TeamColors(
         ["rgb(0, 142, 151)", "rgb(0, 142, 151)", "white"],
         ["white", "rgb(0, 142, 151)", "rgb(0, 142, 151)"]
@@ -98,8 +102,24 @@ TEAM_COLORS = {
         ["rgb(0, 63, 45)", "white", "white"],
         ["white", "rgb(0, 63, 45)", "rgb(0, 63, 45)"]
     ),
+    "PHI": TeamColors(
+        ["rgb(0, 76, 84)", "black", "rgb(166, 174, 176)"],
+        ["white", "rgb(0, 76, 84)", "black"]
+    ),
+    "PIT": TeamColors(
+        ["black", "rgb(238, 173, 30)", "white"],
+        ["white", "rgb(238, 173, 30)", "black"]
+    ),
+    "SF": TeamColors(
+        ["rgb(170, 0, 0)", "rgb(175, 146, 93)", "white"],
+        ["white", "rgb(175, 146, 93)", "rgb(170, 0, 0)"]
+    ),
 
     # No longer current abbreviations go here:
+    "OAK": TeamColors(
+        ["black", "rgb(166, 174, 176)", "white"],
+        ["white", "rgb(166, 174, 176)", "black"]
+    ),
     "SD": TeamColors(
         ["rgb(0, 128, 197)", "rgb(0, 21, 50)", "rgb(238, 173, 30)"],
         ["white", "rgb(238, 173, 30)", "rgb(0, 128, 197)"]

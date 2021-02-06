@@ -10,7 +10,7 @@ with open('README.md') as readme_file:
 
 # TODO: Coordinate with environment.yml
 requirements = [
-    'dask==2021.1.0',
+    'dask[dataframe]==2021.1.0',
     'numpy==1.19.5',
     'pandas==1.2.0',
     'plotly==4.14.3',
