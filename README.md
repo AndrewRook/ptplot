@@ -10,3 +10,4 @@
 * write additional documentation
 * write function to plot movement trails, with options 
 for opacity and highlighting
+* Expose lookup table of team colors

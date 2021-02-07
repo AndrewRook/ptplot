@@ -27,10 +27,7 @@ def animate_play(
     """
     Animate a play.
 
-    .. Warning::
-        This function assumes that the ordering of the players is the same in every
-        frame. That is if the QB is the first row of frame 1, the QB is also the first
-        row of frame 2+.
+
 
     Parameters
     ----------
@@ -49,6 +46,12 @@ def animate_play(
 
     Returns
     -------
+
+    Warnings
+    --------
+    This function assumes that the ordering of the players is the same in every
+    frame. That is if the QB is the first row of frame 1, the QB is also the first
+    row of frame 2+.
 
     """
     frame_groups = data.groupby(frame_column)
@@ -124,11 +127,43 @@ def animate_play(
     return fig
 
 
-def create_field(figure=None, sport="nfl"):
+def create_field(figure: Union[go.Figure, None] = None, sport_field: str = "nfl"):
+    """
+    Create the field markers used as a background to your plots.
+
+    While it's possible to make plots with player tracking data against
+    a regular white/gray background that your plotting package will use by
+    default, it is much easier to interpret the plots when the data is plotted
+    against a realistic representation of the playing field. This function automates
+    the otherwise tedious creation of playing fields, and can then be used either
+    as input to other functions in this library or for custom plots of your own.
+    Parameters
+    ----------
+    figure
+        If you have an existing plotly Figure object that you want to draw the
+        field on top of, you can pass it in here. Otherwise, creates a new Figure object.
+    sport_field
+        What kind of field you would like. Defaults to a landscape-orientation NFL
+        field. For options, see ``ptplot.plotting.SPORT_FIELD_MAPPING``.
+
+    Returns
+    -------
+    plotly.graph_objects.Figure
+        A Plotly Figure with the field lines and markers drawn in. If the user passes in a
+        Figure, this will be the same Figure.
+
+    Notes
+    -----
+    The units of the field markers are in the physical units of the playing field. For example,
+    the NFL fields will return a Figure with markers placed at the appropriate yardlines. If you
+    pass in an input figure, make sure that any objects on it have matching units. Similarly,
+    when using this field to plot data, make sure that your player tracking data has the same units.
+
+    """
     if figure is None:
         figure = go.Figure()
 
-    field_parameters = SPORT_FIELD_MAPPING[sport.lower()]
+    field_parameters = SPORT_FIELD_MAPPING[sport_field.lower()]
 
     figure.update_layout(
         xaxis_showgrid=False,
@@ -150,13 +185,35 @@ def lookup_team_colors(
     team_abbreviations: Sequence,
     lookup_table: Dict[str, TeamColors],
     num_colors_needed: int,
-    team_is_home_flag: Sequence = None,
+    team_is_home_flag: Union[Sequence, None] = None,
 ):
     """Map team color information to an iterable of team identifiers.
 
-    ``team_is_home_flag`` is an optional boolean flag where True means the
-    team is the home team. If this flag is set, the function will pull the
-    appropriate home/away colors for each team.
+    This function is primarily intended for use by other functions in this library,
+    but is exposed to users in case it is helpful for making custom plots not currently
+    supported by this library.
+
+    Parameters
+    ----------
+    team_abbreviations
+        An iterable of abbreviations (likely strings) of team names. For example, "CLE"
+        for the Cleveland Browns.
+    lookup_table
+        A dictionary which maps the abbreviations to team color schemes, with each color
+        scheme represented by a helper class called ``TeamColors``. Generally users should
+        not be creating this table themselves: instead find the scheme you need in
+        ``ptplot._assets`` (for example, NFL team colors are in
+        ``ptplot._assets.nfl_teams.TEAM_COLORS``).
+    num_colors_needed
+        How many colors you need. For example, if you just want to make a scatterplot of
+        some aggregated player tracking data and you want to color each point by team color,
+        you might only need one color. Alternatively, for animating a single play you may want
+        three colors: one for the marker itself, one for the edge of the marker, and one for the
+        player's number.
+    team_is_home_flag
+        An optional boolean flag where True means the team is the home team. If this flag is set,
+        the function will pull the appropriate home/away colors for each team. If this flag is
+        not set, home colors will be pulled for everyone.
 
     Returns
     -------
