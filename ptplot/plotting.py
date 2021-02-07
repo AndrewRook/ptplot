@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 
 from typing import Callable, Dict, Sequence, Union
 
+from ._assets.core import Field
 from ._assets.nfl_field import FIELD as NFL_FIELD
 from ._assets.nfl_teams import TeamColors, TEAM_COLORS as NFL_TEAM_COLORS
 
@@ -127,7 +128,7 @@ def animate_play(
     return fig
 
 
-def create_field(figure: Union[go.Figure, None] = None, sport_field: str = "nfl"):
+def create_field(figure: Union[go.Figure, None] = None, sport_field: Union[str, Field] = "nfl"):
     """
     Create the field markers used as a background to your plots.
 
@@ -144,7 +145,11 @@ def create_field(figure: Union[go.Figure, None] = None, sport_field: str = "nfl"
         field on top of, you can pass it in here. Otherwise, creates a new Figure object.
     sport_field
         What kind of field you would like. Defaults to a landscape-orientation NFL
-        field. For options, see ``ptplot.plotting.SPORT_FIELD_MAPPING``.
+        field. For options, see ``ptplot.plotting.SPORT_FIELD_MAPPING``. Additionally,
+        instead of passing a string to map with ``SPORT_FIELD_MAPPING``, you can pass
+        a ``ptplot._assets.core.Field`` object directly. This allows you to start with
+        one of the premade fields and modify it to your liking (e.g. changing the field
+        color or adding more padding around the fiel).
 
     Returns
     -------
@@ -163,7 +168,7 @@ def create_field(figure: Union[go.Figure, None] = None, sport_field: str = "nfl"
     if figure is None:
         figure = go.Figure()
 
-    field_parameters = SPORT_FIELD_MAPPING[sport_field.lower()]
+    field_parameters = sport_field if type(sport_field) == Field else SPORT_FIELD_MAPPING[sport_field.lower()]
 
     figure.update_layout(
         xaxis_showgrid=False,
@@ -185,7 +190,8 @@ def lookup_team_colors(
     team_abbreviations: Sequence,
     lookup_table: Dict[str, TeamColors],
     num_colors_needed: int,
-    team_is_home_flag: Union[Sequence, None] = None,
+    team_is_home_flags: Union[Sequence, None] = None,
+    null_team_colors: Sequence = ["black", "black", "black"]
 ):
     """Map team color information to an iterable of team identifiers.
 
@@ -210,14 +216,17 @@ def lookup_team_colors(
         you might only need one color. Alternatively, for animating a single play you may want
         three colors: one for the marker itself, one for the edge of the marker, and one for the
         player's number.
-    team_is_home_flag
+    team_is_home_flags
         An optional boolean flag where True means the team is the home team. If this flag is set,
         the function will pull the appropriate home/away colors for each team. If this flag is
         not set, home colors will be pulled for everyone.
+    null_team_colors
+        The colors to use if a team abbreviation is null. This often happens when the ball is
+        included in the list of identifiers.
 
     Returns
     -------
-    ``num_colors_needed`` tuples, where the first tuple is the primary color for
+    A list of ``num_colors_needed`` tuples, where the first tuple is the primary color for
     each element of the ``team_abbreviations`` iterable, the second tuple is the
     secondary color, etc.
 
@@ -226,8 +235,16 @@ def lookup_team_colors(
     This function is unoptimized, and is designed for use on small datasets only.
     """
     colors_list = []
-    for i, abbreviation in enumerate(team_abbreviations):
-        if team_is_home_flag is None or team_is_home_flag[i] == True:  # noqa: E712
+    # If no flags are passed, make everyone the home team
+    team_is_home_flags = (
+        np.ones(len(team_abbreviations), dtype=bool)
+        if team_is_home_flags is None
+        else team_is_home_flags
+    )
+    for abbreviation, is_home_flag in zip(team_abbreviations, team_is_home_flags):
+        if pd.isnull(abbreviation):
+            team_colors = null_team_colors
+        elif is_home_flag == True:  # noqa: E712
             team_colors = lookup_table[abbreviation].home
         else:
             team_colors = lookup_table[abbreviation].away
@@ -246,9 +263,47 @@ def plot_frame(
     home_away_identifier: Union[None, Callable] = None,
     team_column: str = None,
     uniform_number_column: str = None,
-    fig=None,
     team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
+    fig: Union[None, go.Figure, Field, str] = None
 ):
+    """
+
+    Parameters
+    ----------
+    data
+        The data for the given frame.
+    x_column
+        The column name of the column in `data` that contains x-axis values
+    y_column
+        The column name of the column in `data` that contains y-axis values
+    hover_text_generator
+        Either ``None`` for no special hover text (will still show x/y coordinates), or
+        a function which takes in `data` and returns an array of string labels.
+        For example, the output of the ``ptplot.utilities.generate_labels_from_columns``
+        function.
+    ball_identifier
+        Either ``None`` for no special marker for the ball, or a function which takes in
+        `data` and returns a boolean array where ``True`` indicates a row with data
+        for the ball. For example, ``lambda data: data["displayName"] == "Football"``.
+        Also, see note below about available ball markers.
+    home_away_identifier
+        Either ``None`` for no home/away mapping, or a function which takes in `data` and
+        returns
+    team_column
+    uniform_number_column
+    team_color_mapping
+    fig
+
+    Returns
+    -------
+
+    Notes
+    -----
+    At this time, the only ball marker that is supported is a brown diamond, which roughly
+    approximates an American football. If you would like to use a different ball marker
+    please put in a feature request (or better yet, a pull request implementing this).
+
+    """
     (
         marker_color,
         marker_edge_color,
@@ -280,6 +335,8 @@ def plot_frame(
 
     if fig is None:
         fig = create_field()
+    elif type(fig) in [str, Field]:
+        fig = create_field(sport_field=fig)
 
     fig.add_trace(
         go.Scatter(
@@ -318,24 +375,27 @@ def _generate_markers(
     away_marker_textfont_color = np.tile(np.array(["white"], dtype="U40"), len(is_home))
 
     if team_abbreviations is not None:
-        for i, abbreviation in enumerate(team_abbreviations):
-            if pd.isnull(abbreviation):
-                continue
-            home_colors = abbreviation_lookup_table[abbreviation].home
-            away_colors = abbreviation_lookup_table[abbreviation].away
-
-            home_marker_color[i] = home_colors[0]
-            home_marker_edge_color[i] = home_colors[1]
-            home_marker_textfont_color[i] = home_colors[2]
-
-            away_marker_color[i] = away_colors[0]
-            away_marker_edge_color[i] = away_colors[1]
-            away_marker_textfont_color[i] = away_colors[2]
-
-    marker_color = np.where(is_home == 0, away_marker_color, home_marker_color)
-    marker_edge_color = np.where(is_home == 0, away_marker_edge_color, home_marker_edge_color)
-    marker_textfont_color = np.where(is_home == 0, away_marker_textfont_color, home_marker_textfont_color)
-    return marker_color, marker_edge_color, marker_textfont_color
+        color_tuples = lookup_team_colors(
+            team_abbreviations, abbreviation_lookup_table, 3, team_is_home_flags=is_home
+        )
+        marker_colors = pd.DataFrame({
+            colname: color
+            for colname, color
+            in zip(["marker_color", "marker_edge_color", "marker_textfont_color"], color_tuples)
+        })
+    else:
+        marker_colors = pd.DataFrame({
+            "marker_color": np.where(is_home == 0, away_marker_color, home_marker_color),
+            "marker_edge_color": np.where(is_home == 0, away_marker_edge_color, home_marker_edge_color),
+            "marker_textfont_color": np.where(
+                is_home == 0, away_marker_textfont_color, home_marker_textfont_color
+            )
+        })
+    return (
+        marker_colors["marker_color"].values,
+        marker_colors["marker_edge_color"].values,
+        marker_colors["marker_textfont_color"].values
+    )
 
 
 def _get_style_information(
@@ -349,7 +409,7 @@ def _get_style_information(
     -------
     Team color mapping is unoptimized and should not be used on large datasets
     """
-    is_home = np.tile([-1], len(data)) if not home_identifier else home_identifier(data)
+    is_home = np.tile([1], len(data)) if not home_identifier else home_identifier(data)
     team_column = None if team_column is None else data[team_column]
 
     # Marker styling

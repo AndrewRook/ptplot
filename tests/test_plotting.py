@@ -30,7 +30,7 @@ class TestLookupTeamColors:
         plotting.lookup_team_colors(team_abbreviations, team_color_map, 3)
         # Fails when using the away team, which has fewer colors
         with pytest.raises(IndexError, match="index out of range"):
-            plotting.lookup_team_colors(team_abbreviations, team_color_map, 3, team_is_home_flag=home_away_indicator)
+            plotting.lookup_team_colors(team_abbreviations, team_color_map, 3, team_is_home_flags=home_away_indicator)
 
     def test_works_no_home_away_data(self, team_color_map, constructor):
         team_abbreviations = constructor(["NYJ", "CLE", "NYJ"])
@@ -44,7 +44,7 @@ class TestLookupTeamColors:
         team_abbreviations = constructor(["NYJ", "CLE", "NYJ"])
         home_away_indicator = constructor([False, True, False])
         primary_colors, secondary_colors = plotting.lookup_team_colors(
-            team_abbreviations, team_color_map, 2, team_is_home_flag=home_away_indicator
+            team_abbreviations, team_color_map, 2, team_is_home_flags=home_away_indicator
         )
         assert primary_colors == ("d", "g", "d")
         assert secondary_colors == ("e", "h", "e")
