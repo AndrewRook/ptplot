@@ -1,0 +1,28 @@
+name: Run style checks
+
+on: [push, pull_request]
+
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+    - uses: actions/checkout@5a4ac90  # v2.3.4
+    - name: Set up conda
+      uses: conda-incubator/setup-miniconda@73b9a80  # v2.0.1
+      with:
+        activate-environment: ptplot
+        auto-activate-base: false
+        auto-update-conda: true
+        environment-file: environment.yml
+        python-version: latest
+        channels: conda-forge
+    - name: Sanity Check
+    run: |
+      conda list

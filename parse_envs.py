@@ -3,6 +3,7 @@ import re
 from dataclasses import dataclass
 from typing import Union
 
+
 @dataclass
 class Package:
     name: str
