@@ -1,7 +1,6 @@
 # ptplot
 
 ### TODO
-* set up ci
 * set up cd
 * write more styling utility functions as needed
 * enable more arguments to be either callables or column names

@@ -324,7 +324,7 @@ def lookup_team_colors(
     """
     colors_list = []
     for i, abbreviation in enumerate(team_abbreviations):
-        if team_is_home_flag is None or team_is_home_flag[i] == True:
+        if team_is_home_flag is None or team_is_home_flag[i] == True:  # noqa: E712
             team_colors = lookup_table[abbreviation].home
         else:
             team_colors = lookup_table[abbreviation].away

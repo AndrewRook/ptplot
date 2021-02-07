@@ -10,7 +10,7 @@ FIELD_WIDTH = 53.3
 
 """In order to have the field numbers (the 10, 20, 30, 40, 50) scale properly with
 field size, they need to be rendered as SVG shapes. This dictionary maps the numbers
-to SVG values, based on the Alice font and converted by 
+to SVG values, based on the Alice font and converted by
 https://danmarshall.github.io/google-font-to-svg-path/. I think I used size 10, but I no
 longer remember :/
 """
@@ -169,7 +169,7 @@ def _make_field_lines_markers():
             ),
             dict(
                 type="path",
-                path=f"M {120 - xval + 3.6} 5.2 L {120 -xval + 4.1} 5.45 L {120 - xval + 3.6} 5.7 L {120 - xval + 3.6} 5.2 Z",
+                path=f"M {120 - xval + 3.6} 5.2 L {120 -xval + 4.1} 5.45 L {120 - xval + 3.6} 5.7 L {120 - xval + 3.6} 5.2 Z",  # noqa: E501
                 **number_kwargs,
             ),
             dict(
@@ -179,7 +179,7 @@ def _make_field_lines_markers():
             ),
             dict(
                 type="path",
-                path=f"M {120 - xval + 3.2} 48.5 L {120 - xval + 3.7} 48.25 L {120 - xval + 3.2} 48.0 L {120 - xval + 3.2} 48.5 Z",
+                path=f"M {120 - xval + 3.2} 48.5 L {120 - xval + 3.7} 48.25 L {120 - xval + 3.2} 48.0 L {120 - xval + 3.2} 48.5 Z",  # noqa: E501
                 **number_kwargs,
             ),
         ]
