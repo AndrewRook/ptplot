@@ -16,10 +16,10 @@ jobs:
     - name: Set up conda
       uses: conda-incubator/setup-miniconda@73b9a8098aade40363e43af145303c23542ccb97  # v2.0.1
       with:
-        activate-environment: ptplot
         auto-activate-base: false
         auto-update-conda: true
         environment-file: environment.yml
     - name: Sanity Check
       run: |
         conda list
+        conda info -e
