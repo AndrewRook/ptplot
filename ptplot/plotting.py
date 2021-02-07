@@ -10,151 +10,6 @@ from ._assets.nfl_teams import TeamColors, TEAM_COLORS as NFL_TEAM_COLORS
 SPORT_FIELD_MAPPING = {"nfl": NFL_FIELD}
 
 
-def create_field(figure=None, sport="nfl"):
-    if figure is None:
-        figure = go.Figure()
-
-    field_parameters = SPORT_FIELD_MAPPING[sport.lower()]
-
-    figure.update_layout(
-        xaxis_showgrid=False,
-        yaxis_showgrid=False,  # remove grid lines
-        xaxis_zeroline=False,
-        yaxis_zeroline=False,  # remove axis lines
-        plot_bgcolor=field_parameters.background_color,  # set the background color
-        yaxis_range=[-field_parameters.width_padding, field_parameters.width + field_parameters.width_padding],
-        xaxis_range=[-field_parameters.length_padding, field_parameters.length + field_parameters.length_padding],
-        shapes=field_parameters.lines_markers,
-    )
-    figure.update_xaxes(showticklabels=False)
-    figure.update_yaxes(showticklabels=False)
-
-    return figure
-
-
-def get_style_information(
-    data: pd.DataFrame,
-    home_identifier: Union[None, Callable],
-    team_column: Union[None, str],
-    team_color_mapping: Dict[str, TeamColors],
-):
-    """
-    Warning
-    -------
-    Team color mapping is unoptimized and should not be used on large datasets
-    """
-    is_home = np.tile([-1], len(data)) if not home_identifier else home_identifier(data)
-    team_column = None if team_column is None else data[team_column]
-
-    # Marker styling
-    marker_color, marker_edge_color, marker_textfont_color = _generate_markers(is_home, team_column, team_color_mapping)
-    marker_width = np.tile([2], len(data))
-    marker_size = np.tile([16], len(data))
-    marker_symbol = np.tile(np.array(["circle"], dtype="U40"), len(data))
-    return marker_color, marker_edge_color, marker_textfont_color, marker_width, marker_size, marker_symbol
-
-
-def _generate_markers(
-    is_home: np.array,
-    team_abbreviations: Union[pd.Series, None],
-    abbreviation_lookup_table: Dict[str, TeamColors] = NFL_TEAM_COLORS,
-):
-    # Set defaults:
-    home_marker_color = np.tile(np.array(["gainsboro"], dtype="U40"), len(is_home))
-    home_marker_edge_color = np.tile(np.array(["darkslategray"], dtype="U40"), len(is_home))
-    home_marker_textfont_color = np.tile(np.array(["black"], dtype="U40"), len(is_home))
-
-    away_marker_color = np.tile(np.array(["darkslategray"], dtype="U40"), len(is_home))
-    away_marker_edge_color = np.tile(np.array(["gainsboro"], dtype="U40"), len(is_home))
-    away_marker_textfont_color = np.tile(np.array(["white"], dtype="U40"), len(is_home))
-
-    if team_abbreviations is not None:
-        for i, abbreviation in enumerate(team_abbreviations):
-            if pd.isnull(abbreviation):
-                continue
-            home_colors = abbreviation_lookup_table[abbreviation].home
-            away_colors = abbreviation_lookup_table[abbreviation].away
-
-            home_marker_color[i] = home_colors[0]
-            home_marker_edge_color[i] = home_colors[1]
-            home_marker_textfont_color[i] = home_colors[2]
-
-            away_marker_color[i] = away_colors[0]
-            away_marker_edge_color[i] = away_colors[1]
-            away_marker_textfont_color[i] = away_colors[2]
-
-    marker_color = np.where(is_home == 0, away_marker_color, home_marker_color)
-    marker_edge_color = np.where(is_home == 0, away_marker_edge_color, home_marker_edge_color)
-    marker_textfont_color = np.where(is_home == 0, away_marker_textfont_color, home_marker_textfont_color)
-    return marker_color, marker_edge_color, marker_textfont_color
-
-
-def plot_frame(
-    data: pd.DataFrame,
-    x_column: str,
-    y_column: str,
-    hover_text_generator: Union[None, Callable] = None,
-    ball_identifier: Union[None, Callable] = None,
-    home_away_identifier: Union[None, Callable] = None,
-    team_column: str = None,
-    uniform_number_column: str = None,
-    fig=None,
-    team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
-):
-    (
-        marker_color,
-        marker_edge_color,
-        marker_textfont_color,
-        marker_width,
-        marker_size,
-        marker_symbol,
-    ) = get_style_information(data, home_away_identifier, team_column, team_color_mapping)
-
-    if uniform_number_column is None:
-        mode = "markers"
-        text = None
-    else:
-        mode = "markers+text"
-        text = data[uniform_number_column]
-
-    hover_text = "" if not hover_text_generator else hover_text_generator(data)
-
-    if ball_identifier is not None:
-        is_ball = ball_identifier(data)
-    else:
-        is_ball = np.array([False] * len(data))
-
-    marker_color[is_ball] = "brown"
-    marker_edge_color[is_ball] = "black"
-    marker_symbol[is_ball] = "diamond-wide"
-    marker_width[is_ball] = 1
-    marker_size[is_ball] = 12
-
-    if fig is None:
-        fig = create_field()
-
-    fig.add_trace(
-        go.Scatter(
-            x=data[x_column],
-            y=data[y_column],
-            mode=mode,
-            hovertext=hover_text,
-            text=text,
-            textfont_size=9,
-            textfont_family=["Gravitas One"],
-            textfont_color=marker_textfont_color,
-            marker={
-                "size": marker_size,
-                "color": marker_color,
-                "symbol": marker_symbol,
-                "opacity": 1,
-                "line": {"width": marker_width, "color": marker_edge_color},
-            },
-        )
-    )
-    return fig
-
-
 def animate_play(
     data: pd.DataFrame,
     x_column: str,
@@ -269,35 +124,26 @@ def animate_play(
     return fig
 
 
-def _make_sliders(frame_names: Sequence, slider_labels: Sequence, **slider_kwargs):
-    if len(frame_names) != len(slider_labels):
-        raise IndexError("Frame names and slider labels must have same length")
-    if "steps" in slider_kwargs:
-        raise NotImplementedError("Cannot overwrite arguments in the slider steps")
-    slider_steps = [
-        {
-            "args": [
-                [frame_name],
-                {
-                    "frame": {"duration": 100},
-                    "mode": "immediate",
-                    "fromcurrent": True,
-                    "transition": {"duration": 100, "easing": "cubic-out"},
-                },
-            ],
-            "label": slider_labels[i],
-            "method": "animate",
-        }
-        for i, frame_name in enumerate(frame_names)
-    ]
+def create_field(figure=None, sport="nfl"):
+    if figure is None:
+        figure = go.Figure()
 
-    slider_kwargs["len"] = slider_kwargs.get("len", 0.7)
-    slider_kwargs["x"] = slider_kwargs.get("x", 0.2)
-    slider_kwargs["y"] = slider_kwargs.get("y", 0.05)
+    field_parameters = SPORT_FIELD_MAPPING[sport.lower()]
 
-    sliders = [{**slider_kwargs, "steps": slider_steps}]
+    figure.update_layout(
+        xaxis_showgrid=False,
+        yaxis_showgrid=False,  # remove grid lines
+        xaxis_zeroline=False,
+        yaxis_zeroline=False,  # remove axis lines
+        plot_bgcolor=field_parameters.background_color,  # set the background color
+        yaxis_range=[-field_parameters.width_padding, field_parameters.width + field_parameters.width_padding],
+        xaxis_range=[-field_parameters.length_padding, field_parameters.length + field_parameters.length_padding],
+        shapes=field_parameters.lines_markers,
+    )
+    figure.update_xaxes(showticklabels=False)
+    figure.update_yaxes(showticklabels=False)
 
-    return sliders
+    return figure
 
 
 def lookup_team_colors(
@@ -332,3 +178,157 @@ def lookup_team_colors(
         colors_list.append([team_colors[j] for j in range(num_colors_needed)])
 
     return list(zip(*colors_list))
+
+
+def plot_frame(
+    data: pd.DataFrame,
+    x_column: str,
+    y_column: str,
+    hover_text_generator: Union[None, Callable] = None,
+    ball_identifier: Union[None, Callable] = None,
+    home_away_identifier: Union[None, Callable] = None,
+    team_column: str = None,
+    uniform_number_column: str = None,
+    fig=None,
+    team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
+):
+    (
+        marker_color,
+        marker_edge_color,
+        marker_textfont_color,
+        marker_width,
+        marker_size,
+        marker_symbol,
+    ) = _get_style_information(data, home_away_identifier, team_column, team_color_mapping)
+
+    if uniform_number_column is None:
+        mode = "markers"
+        text = None
+    else:
+        mode = "markers+text"
+        text = data[uniform_number_column]
+
+    hover_text = "" if not hover_text_generator else hover_text_generator(data)
+
+    if ball_identifier is not None:
+        is_ball = ball_identifier(data)
+    else:
+        is_ball = np.array([False] * len(data))
+
+    marker_color[is_ball] = "brown"
+    marker_edge_color[is_ball] = "black"
+    marker_symbol[is_ball] = "diamond-wide"
+    marker_width[is_ball] = 1
+    marker_size[is_ball] = 12
+
+    if fig is None:
+        fig = create_field()
+
+    fig.add_trace(
+        go.Scatter(
+            x=data[x_column],
+            y=data[y_column],
+            mode=mode,
+            hovertext=hover_text,
+            text=text,
+            textfont_size=9,
+            textfont_family=["Gravitas One"],
+            textfont_color=marker_textfont_color,
+            marker={
+                "size": marker_size,
+                "color": marker_color,
+                "symbol": marker_symbol,
+                "opacity": 1,
+                "line": {"width": marker_width, "color": marker_edge_color},
+            },
+        )
+    )
+    return fig
+
+
+def _generate_markers(
+    is_home: np.array,
+    team_abbreviations: Union[pd.Series, None],
+    abbreviation_lookup_table: Dict[str, TeamColors] = NFL_TEAM_COLORS,
+):
+    # Set defaults:
+    home_marker_color = np.tile(np.array(["gainsboro"], dtype="U40"), len(is_home))
+    home_marker_edge_color = np.tile(np.array(["darkslategray"], dtype="U40"), len(is_home))
+    home_marker_textfont_color = np.tile(np.array(["black"], dtype="U40"), len(is_home))
+
+    away_marker_color = np.tile(np.array(["darkslategray"], dtype="U40"), len(is_home))
+    away_marker_edge_color = np.tile(np.array(["gainsboro"], dtype="U40"), len(is_home))
+    away_marker_textfont_color = np.tile(np.array(["white"], dtype="U40"), len(is_home))
+
+    if team_abbreviations is not None:
+        for i, abbreviation in enumerate(team_abbreviations):
+            if pd.isnull(abbreviation):
+                continue
+            home_colors = abbreviation_lookup_table[abbreviation].home
+            away_colors = abbreviation_lookup_table[abbreviation].away
+
+            home_marker_color[i] = home_colors[0]
+            home_marker_edge_color[i] = home_colors[1]
+            home_marker_textfont_color[i] = home_colors[2]
+
+            away_marker_color[i] = away_colors[0]
+            away_marker_edge_color[i] = away_colors[1]
+            away_marker_textfont_color[i] = away_colors[2]
+
+    marker_color = np.where(is_home == 0, away_marker_color, home_marker_color)
+    marker_edge_color = np.where(is_home == 0, away_marker_edge_color, home_marker_edge_color)
+    marker_textfont_color = np.where(is_home == 0, away_marker_textfont_color, home_marker_textfont_color)
+    return marker_color, marker_edge_color, marker_textfont_color
+
+
+def _get_style_information(
+    data: pd.DataFrame,
+    home_identifier: Union[None, Callable],
+    team_column: Union[None, str],
+    team_color_mapping: Dict[str, TeamColors],
+):
+    """
+    Warning
+    -------
+    Team color mapping is unoptimized and should not be used on large datasets
+    """
+    is_home = np.tile([-1], len(data)) if not home_identifier else home_identifier(data)
+    team_column = None if team_column is None else data[team_column]
+
+    # Marker styling
+    marker_color, marker_edge_color, marker_textfont_color = _generate_markers(is_home, team_column, team_color_mapping)
+    marker_width = np.tile([2], len(data))
+    marker_size = np.tile([16], len(data))
+    marker_symbol = np.tile(np.array(["circle"], dtype="U40"), len(data))
+    return marker_color, marker_edge_color, marker_textfont_color, marker_width, marker_size, marker_symbol
+
+
+def _make_sliders(frame_names: Sequence, slider_labels: Sequence, **slider_kwargs):
+    if len(frame_names) != len(slider_labels):
+        raise IndexError("Frame names and slider labels must have same length")
+    if "steps" in slider_kwargs:
+        raise NotImplementedError("Cannot overwrite arguments in the slider steps")
+    slider_steps = [
+        {
+            "args": [
+                [frame_name],
+                {
+                    "frame": {"duration": 100},
+                    "mode": "immediate",
+                    "fromcurrent": True,
+                    "transition": {"duration": 100, "easing": "cubic-out"},
+                },
+            ],
+            "label": slider_labels[i],
+            "method": "animate",
+        }
+        for i, frame_name in enumerate(frame_names)
+    ]
+
+    slider_kwargs["len"] = slider_kwargs.get("len", 0.7)
+    slider_kwargs["x"] = slider_kwargs.get("x", 0.2)
+    slider_kwargs["y"] = slider_kwargs.get("y", 0.05)
+
+    sliders = [{**slider_kwargs, "steps": slider_steps}]
+
+    return sliders
