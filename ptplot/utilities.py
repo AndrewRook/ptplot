@@ -1,4 +1,5 @@
 import dask.dataframe as dd
+import functools
 import numpy as np
 import warnings
 
@@ -60,7 +61,7 @@ def generate_time_elapsed_labels(time_zeropoint, time_column_name, formatting="{
     return time_elapsed_function
 
 
-def generate_labels_from_multiple_columns(
+def generate_labels_from_columns(
     columns: Sequence[str],
     column_formatting: Union[Sequence[str], None] = None,
     separator: str = " ",
@@ -76,4 +77,9 @@ def generate_labels_from_multiple_columns(
             data[column].astype(str) if formatter is None else data[column].map(formatter.format)
             for column, formatter in zip(columns, column_formatting)
         ]
-        # TODO: functools.reduce on the str.cat function
+        labels = functools.reduce(
+            lambda x, y: x.str.cat(y, sep=separator, na_rep=na_rep), string_columns
+        )
+        return labels
+
+    return column_concat_function
