@@ -78,9 +78,7 @@ def generate_labels_from_columns(
             data[column].astype(str) if formatter is None else data[column].map(formatter.format)
             for column, formatter in zip(columns, column_formatting)
         ]
-        labels = functools.reduce(
-            lambda x, y: x.str.cat(y, sep=separator, na_rep=na_rep), string_columns
-        )
+        labels = functools.reduce(lambda x, y: x.str.cat(y, sep=separator, na_rep=na_rep), string_columns)
         return labels
 
     return column_concat_function
