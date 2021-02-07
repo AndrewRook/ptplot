@@ -4,6 +4,42 @@ import pytest
 from ptplot import utilities
 
 
+class TestGenerateTimeElapsedLabels:
+
+    def test_fails_with_multiple_times(self):
+        data = pd.DataFrame({
+            "time": pd.to_datetime([
+                "2021-01-01T10:00:01Z",
+                "2021-01-01T10:00:02Z",
+                "2021-01-01T10:00:03Z",
+                "2021-01-01T10:00:03.99999Z",
+                "2021-01-01T10:00:04.125Z",
+            ])
+        })
+        label_func = utilities.generate_time_elapsed_labels(
+            pd.to_datetime("2021-01-01T10:00:01Z"), "time"
+        )
+        with pytest.raises(ValueError, match="Frame has multiple times"):
+            label_func(data)
+
+    def test_works(self):
+        data = pd.DataFrame({
+            "time": pd.to_datetime([
+                "2021-01-01T10:00:04.126Z",
+                "2021-01-01T10:00:04.126Z",
+                "2021-01-01T10:00:04.126Z",
+                "2021-01-01T10:00:04.126Z",
+                "2021-01-01T10:00:04.126Z",
+            ])
+        })
+        label_func = utilities.generate_time_elapsed_labels(
+            pd.to_datetime("2021-01-01T10:00:01Z"), "time"
+        )
+        expected = "3.13 s"
+        actual = label_func(data)
+        assert expected == actual
+
+
 class TestGenerateLabelsFromColumns:
 
     @pytest.fixture

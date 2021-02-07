@@ -44,7 +44,7 @@ def make_hline(x0, x1, y, **kwargs):
     return dict(type="line", y0=y, y1=y, x0=x0, x1=x1, **kwargs)
 
 
-def generate_time_elapsed_labels(time_zeropoint, time_column_name, formatting="{: .2f} s"):
+def generate_time_elapsed_labels(time_zeropoint, time_column_name, formatting="{:.2f} s"):
     """Create a function that can be used in plotting animations to show time elapsed compared
     to a user-defined zeropoint.
     """
@@ -67,6 +67,7 @@ def generate_labels_from_columns(
     separator: str = " ",
     na_rep: Union[str, None] = None,
 ):
+    """Concatenate columns of a dataframe together to create formatted text labels."""
     if column_formatting is not None and len(columns) != len(column_formatting):
         raise IndexError("If column_formatting is used, must have the same length as columns")
     if column_formatting is None:
