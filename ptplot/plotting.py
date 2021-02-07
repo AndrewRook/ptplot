@@ -409,7 +409,7 @@ def _get_style_information(
     -------
     Team color mapping is unoptimized and should not be used on large datasets
     """
-    is_home = np.tile([1], len(data)) if not home_identifier else home_identifier(data)
+    is_home = np.ones(len(data), dtype=bool) if not home_identifier else home_identifier(data)
     team_column = None if team_column is None else data[team_column]
 
     # Marker styling
