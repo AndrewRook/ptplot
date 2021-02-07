@@ -24,3 +24,11 @@ jobs:
       run: |
         conda list
         conda info -e
+
+    - name: Black
+      run: |
+        python -m black -l 120 --check ptplot/
+
+    - name: flake8
+      run: |
+        python -m flake8 ptplot/
