@@ -3,7 +3,6 @@
 ### TODO
 * set up ci
 * set up cd
-* remove double quotes
 * write more styling utility functions as needed
 * enable more arguments to be either callables or column names
 * enable vertical fields and relative fields
