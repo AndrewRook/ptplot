@@ -1,9 +1,10 @@
 import dask.dataframe as dd
 import functools
 import numpy as np
+import pandas as pd
 import warnings
 
-from typing import Sequence, Union
+from typing import Any, Callable, Sequence, Union
 
 
 class DaskCompatibilityWarning(UserWarning):  # pragma: no cover
@@ -82,3 +83,28 @@ def generate_labels_from_columns(
         return labels
 
     return column_concat_function
+
+
+def _parse_none_callable_string(
+    object_to_parse: Union[None, Callable, str],
+    data: pd.DataFrame,
+    default_value: Any
+):
+    """Takes an argument that may be one of None, a column in a dataframe, or a function which operates
+    on the dataframe.
+    """
+    if object_to_parse is None:
+        # Set the default
+        return np.tile([default_value], len(data))
+    try:
+        # Is it a function? If so, call it using data as the argument
+        parsed_data = object_to_parse(data)
+    except TypeError:
+        # If not a function, then it should be a string. `.values` ensures a numpy array is returned
+        return data[object_to_parse].values
+    # If it was a function, let's make sure it's not a pandas Series (to avoid potential issues with
+    # indexing
+    try:
+        return parsed_data.values
+    except AttributeError:
+        return parsed_data

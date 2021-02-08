@@ -7,6 +7,7 @@ from typing import Callable, Dict, Sequence, Union
 from ._assets.core import Field
 from ._assets.nfl_field import FIELD as NFL_FIELD
 from ._assets.nfl_teams import TeamColors, TEAM_COLORS as NFL_TEAM_COLORS
+from .utilities import _parse_none_callable_string
 
 SPORT_FIELD_MAPPING = {"nfl": NFL_FIELD}
 
@@ -69,11 +70,11 @@ def animate_play(
         first_frame,
         x_column,
         y_column,
-        hover_text_generator=hover_text_generator,
+        hover_text=hover_text_generator,
         ball_identifier=ball_identifier,
         home_away_identifier=home_away_identifier,
-        team_column=team_column,
-        uniform_number_column=uniform_number_column,
+        team=team_column,
+        uniform_number=uniform_number_column,
         fig=fig,
         team_color_mapping=team_color_mapping,
     )
@@ -258,11 +259,11 @@ def plot_frame(
     data: pd.DataFrame,
     x_column: str,
     y_column: str,
-    hover_text_generator: Union[None, Callable] = None,
-    ball_identifier: Union[None, Callable] = None,
-    home_away_identifier: Union[None, Callable] = None,
-    team_column: str = None,
-    uniform_number_column: str = None,
+    hover_text: Union[None, str, Callable] = None,
+    ball_identifier: Union[None, str, Callable] = None,
+    home_away_identifier: Union[None, str, Callable] = None,
+    team_abbreviations: Union[None, str, Callable] = None,
+    uniform_number: Union[None, str, Callable] = None,
     team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
     fig: Union[None, go.Figure, Field, str] = None
 ):
@@ -276,7 +277,7 @@ def plot_frame(
         The column name of the column in `data` that contains x-axis values
     y_column
         The column name of the column in `data` that contains y-axis values
-    hover_text_generator
+    hover_text
         Either ``None`` for no special hover text (will still show x/y coordinates), or
         a function which takes in `data` and returns an array of string labels.
         For example, the output of the ``ptplot.utilities.generate_labels_from_columns``
@@ -287,10 +288,13 @@ def plot_frame(
         for the ball. For example, ``lambda data: data["displayName"] == "Football"``.
         Also, see note below about available ball markers.
     home_away_identifier
-        Either ``None`` for no home/away mapping, or a function which takes in `data` and
-        returns
-    team_column
-    uniform_number_column
+        Either ``None`` for no home/away color-coding, or a function which takes in `data` and
+        returns a boolean array where ``True`` indicates a row with the home team and ``False``
+        is a row with the away team. For example, ``lambda data: data["team"] == "home"``.
+        If ``ball_identifier`` is set, whatever value assigned to the
+        ball will override the value assigned by this function.
+    team_abbreviations
+    uniform_number
     team_color_mapping
     fig
 
@@ -304,6 +308,18 @@ def plot_frame(
     please put in a feature request (or better yet, a pull request implementing this).
 
     """
+    # First, parse out all of the optional arguments:
+    hover_text = _parse_none_callable_string(hover_text, data, "")
+    is_ball = _parse_none_callable_string(ball_identifier, data, False)
+    mode = "markers" if uniform_number is None else "markers+text"
+    text = _parse_none_callable_string(uniform_number, data, None)
+
+    team_abbreviations = (
+        # A little different because abbreviations are all-or-nothing
+        team_abbreviations if team_abbreviations is None
+        else _parse_none_callable_string(team_abbreviations, data, "NA")
+    )
+    home_away_flag = _parse_none_callable_string(home_away_identifier, data, True)
     (
         marker_color,
         marker_edge_color,
@@ -311,21 +327,7 @@ def plot_frame(
         marker_width,
         marker_size,
         marker_symbol,
-    ) = _get_style_information(data, home_away_identifier, team_column, team_color_mapping)
-
-    if uniform_number_column is None:
-        mode = "markers"
-        text = None
-    else:
-        mode = "markers+text"
-        text = data[uniform_number_column]
-
-    hover_text = "" if not hover_text_generator else hover_text_generator(data)
-
-    if ball_identifier is not None:
-        is_ball = ball_identifier(data)
-    else:
-        is_ball = np.array([False] * len(data))
+    ) = _get_style_information(data, home_away_flag, team_abbreviations, team_color_mapping)
 
     marker_color[is_ball] = "brown"
     marker_edge_color[is_ball] = "black"
@@ -400,8 +402,8 @@ def _generate_markers(
 
 def _get_style_information(
     data: pd.DataFrame,
-    home_identifier: Union[None, Callable],
-    team_column: Union[None, str],
+    is_home: np.array,
+    team_column: Union[None, np.array],
     team_color_mapping: Dict[str, TeamColors],
 ):
     """
@@ -409,8 +411,6 @@ def _get_style_information(
     -------
     Team color mapping is unoptimized and should not be used on large datasets
     """
-    is_home = np.ones(len(data), dtype=bool) if not home_identifier else home_identifier(data)
-    team_column = None if team_column is None else data[team_column]
 
     # Marker styling
     marker_color, marker_edge_color, marker_textfont_color = _generate_markers(is_home, team_column, team_color_mapping)
