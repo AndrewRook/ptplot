@@ -85,11 +85,7 @@ def generate_labels_from_columns(
     return column_concat_function
 
 
-def _parse_none_callable_string(
-    object_to_parse: Union[None, Callable, str],
-    data: pd.DataFrame,
-    default_value: Any
-):
+def _parse_none_callable_string(object_to_parse: Union[None, Callable, str], data: pd.DataFrame, default_value: Any):
     """Takes an argument that may be one of None, a column in a dataframe, or a function which operates
     on the dataframe.
     """

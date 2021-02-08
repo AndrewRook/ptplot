@@ -202,7 +202,7 @@ def lookup_team_colors(
     lookup_table: Dict[str, TeamColors],
     num_colors_needed: int,
     team_is_home_flags: Union[Sequence, None] = None,
-    null_team_colors: Sequence = ["black", "black", "black"]
+    null_team_colors: Sequence = ["black", "black", "black"],
 ):
     """Map team color information to an iterable of team identifiers.
 
@@ -248,9 +248,7 @@ def lookup_team_colors(
     colors_list = []
     # If no flags are passed, make everyone the home team
     team_is_home_flags = (
-        np.ones(len(team_abbreviations), dtype=bool)
-        if team_is_home_flags is None
-        else team_is_home_flags
+        np.ones(len(team_abbreviations), dtype=bool) if team_is_home_flags is None else team_is_home_flags
     )
     for abbreviation, is_home_flag in zip(team_abbreviations, team_is_home_flags):
         if pd.isnull(abbreviation):
@@ -275,7 +273,7 @@ def plot_frame(
     team_abbreviations: Union[None, str, Callable] = None,
     uniform_number: Union[None, str, Callable] = None,
     team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
-    fig: Union[None, go.Figure, Field, str] = None
+    fig: Union[None, go.Figure, Field, str] = None,
 ):
     """
 
@@ -342,7 +340,8 @@ def plot_frame(
 
     team_abbreviations = (
         # A little different because abbreviations are all-or-nothing
-        team_abbreviations if team_abbreviations is None
+        team_abbreviations
+        if team_abbreviations is None
         else _parse_none_callable_string(team_abbreviations, data, "NA")
     )
     home_away_flag = _parse_none_callable_string(home_away_identifier, data, True)
@@ -404,26 +403,25 @@ def _generate_markers(
     away_marker_textfont_color = np.tile(np.array(["white"], dtype="U40"), len(is_home))
 
     if team_abbreviations is not None:
-        color_tuples = lookup_team_colors(
-            team_abbreviations, abbreviation_lookup_table, 3, team_is_home_flags=is_home
+        color_tuples = lookup_team_colors(team_abbreviations, abbreviation_lookup_table, 3, team_is_home_flags=is_home)
+        marker_colors = pd.DataFrame(
+            {
+                colname: color
+                for colname, color in zip(["marker_color", "marker_edge_color", "marker_textfont_color"], color_tuples)
+            }
         )
-        marker_colors = pd.DataFrame({
-            colname: color
-            for colname, color
-            in zip(["marker_color", "marker_edge_color", "marker_textfont_color"], color_tuples)
-        })
     else:
-        marker_colors = pd.DataFrame({
-            "marker_color": np.where(is_home == 0, away_marker_color, home_marker_color),
-            "marker_edge_color": np.where(is_home == 0, away_marker_edge_color, home_marker_edge_color),
-            "marker_textfont_color": np.where(
-                is_home == 0, away_marker_textfont_color, home_marker_textfont_color
-            )
-        })
+        marker_colors = pd.DataFrame(
+            {
+                "marker_color": np.where(is_home == 0, away_marker_color, home_marker_color),
+                "marker_edge_color": np.where(is_home == 0, away_marker_edge_color, home_marker_edge_color),
+                "marker_textfont_color": np.where(is_home == 0, away_marker_textfont_color, home_marker_textfont_color),
+            }
+        )
     return (
         marker_colors["marker_color"].values,
         marker_colors["marker_edge_color"].values,
-        marker_colors["marker_textfont_color"].values
+        marker_colors["marker_textfont_color"].values,
     )
 
 
