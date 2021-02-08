@@ -17,11 +17,11 @@ def animate_play(
     x_column: str,
     y_column: str,
     frame_column: str,
-    hover_text_generator: Union[None, Callable] = None,
-    ball_identifier: Union[None, Callable] = None,
-    home_away_identifier: Union[None, Callable] = None,
-    team_column: str = None,
-    uniform_number_column: str = None,
+    hover_text: Union[None, str, Callable] = None,
+    ball_identifier: Union[None, str, Callable] = None,
+    home_away_identifier: Union[None, str, Callable] = None,
+    team_abbreviations: Union[None, str, Callable] = None,
+    uniform_number: Union[None, str, Callable] = None,
     fig=None,
     team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
     slider_label_generator: Union[None, Callable] = None,
@@ -29,25 +29,35 @@ def animate_play(
     """
     Animate a play.
 
+    data: pd.DataFrame,
+    x_column: str,
+    y_column: str,
+    hover_text: Union[None, str, Callable] = None,
+    ball_identifier: Union[None, str, Callable] = None,
+    home_away_identifier: Union[None, str, Callable] = None,
+    team_abbreviations: Union[None, str, Callable] = None,
+    uniform_number: Union[None, str, Callable] = None,
+    team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
+    fig: Union[None, go.Figure, Field, str] = None
 
 
     Parameters
     ----------
-    data
-    x_column
-    y_column
     frame_column
-    hover_text_generator
-    ball_identifier
-    home_away_identifier
-    team_column
-    uniform_number_column
-    fig
-    team_color_mapping
+        The column name in ``data`` which has frame numbers in it
     slider_label_generator
+        If ``None``, use the values in the ``frame_column`` to label the slider.
+        If a function, apply the function to the ``data`` for each frame to generate
+        slider labels. For example, the ``ptplot.utilities.generate_time_elapsed_labels``
+        function.
+    Other Fields
+        See the documentation for ``ptplot.plotting.plot_frame``
 
     Returns
     -------
+    plotly.graph_objects.Figure
+        A Plotly Figure with player positions animated. If the user passes in a
+        Figure, this will be the same Figure.
 
     Warnings
     --------
@@ -70,11 +80,11 @@ def animate_play(
         first_frame,
         x_column,
         y_column,
-        hover_text=hover_text_generator,
+        hover_text=hover_text,
         ball_identifier=ball_identifier,
         home_away_identifier=home_away_identifier,
-        team=team_column,
-        uniform_number=uniform_number_column,
+        team_abbreviations=team_abbreviations,
+        uniform_number=uniform_number,
         fig=fig,
         team_color_mapping=team_color_mapping,
     )
@@ -274,32 +284,48 @@ def plot_frame(
     data
         The data for the given frame.
     x_column
-        The column name of the column in `data` that contains x-axis values
+        The column name of the column in ``data`` that contains x-axis values
     y_column
-        The column name of the column in `data` that contains y-axis values
+        The column name of the column in ``data`` that contains y-axis values
     hover_text
-        Either ``None`` for no special hover text (will still show x/y coordinates), or
-        a function which takes in `data` and returns an array of string labels.
+        Either ``None`` for no special hover text (will still show x/y coordinates),
+        a function which takes in `data` and returns an array of string labels, or a string
+        indicating a column of ``data`` that contains the labels.
         For example, the output of the ``ptplot.utilities.generate_labels_from_columns``
         function.
     ball_identifier
-        Either ``None`` for no special marker for the ball, or a function which takes in
+        Either ``None`` for no special marker for the ball, a function which takes in
         `data` and returns a boolean array where ``True`` indicates a row with data
-        for the ball. For example, ``lambda data: data["displayName"] == "Football"``.
+        for the ball, or a string indicating the column of ``data`` with those booleans.
+        For example, ``lambda data: data["displayName"] == "Football"``.
         Also, see note below about available ball markers.
     home_away_identifier
-        Either ``None`` for no home/away color-coding, or a function which takes in `data` and
+        Either ``None`` for no home/away color-coding, a function which takes in ``data`` and
         returns a boolean array where ``True`` indicates a row with the home team and ``False``
-        is a row with the away team. For example, ``lambda data: data["team"] == "home"``.
+        is a row with the away team, or a string indicating the column of ``data`` with those
+        booleans. For example, ``lambda data: data["team"] == "home"``.
         If ``ball_identifier`` is set, whatever value assigned to the
         ball will override the value assigned by this function.
     team_abbreviations
+        Either ``None`` to not color-code players by team, a function which takes in ``data`` and
+        returns a string array of team abbreviations, or a string indicating the column of
+        ``data`` that contains the abbreviations.
     uniform_number
+        Either ``None`` to not put uniform numbers on markers, a function which takes in ``data``
+        and returns an array of the uniform numbers, or a string indicating the column of ``data``
+        that contains the numbers.
     team_color_mapping
+        A dictionary mapping team abbreviations to team colors. Defaults to NFL teams.
     fig
+        If an instance of ``plotly.graph_objects.Figure``,
+        plot on top of that figure. Otherwise corresponds to the ``sport_field`` keyword argument
+        of ``ptplot.plotting.create_field``.
 
     Returns
     -------
+    plotly.graph_objects.Figure
+        A Plotly Figure with player positions marked. If the user passes in a
+        Figure, this will be the same Figure.
 
     Notes
     -----
@@ -320,6 +346,7 @@ def plot_frame(
         else _parse_none_callable_string(team_abbreviations, data, "NA")
     )
     home_away_flag = _parse_none_callable_string(home_away_identifier, data, True)
+
     (
         marker_color,
         marker_edge_color,
