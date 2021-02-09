@@ -27,18 +27,9 @@ def animate_play(
     slider_label_generator: Union[None, Callable] = None,
 ):
     """
-    Animate a play.
-
-    data: pd.DataFrame,
-    x_column: str,
-    y_column: str,
-    hover_text: Union[None, str, Callable] = None,
-    ball_identifier: Union[None, str, Callable] = None,
-    home_away_identifier: Union[None, str, Callable] = None,
-    team_abbreviations: Union[None, str, Callable] = None,
-    uniform_number: Union[None, str, Callable] = None,
-    team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
-    fig: Union[None, go.Figure, Field, str] = None
+    Animate a play. Player and ball positions are represented by moving
+    markers. The animation generates play and pause buttons, plus a slider
+    that can be moved to skip to a specific frame.
 
 
     Parameters
@@ -50,7 +41,7 @@ def animate_play(
         If a function, apply the function to the ``data`` for each frame to generate
         slider labels. For example, the ``ptplot.utilities.generate_time_elapsed_labels``
         function.
-    Other Fields
+    Other fields
         See the documentation for ``ptplot.plotting.plot_frame``
 
     Returns
@@ -149,6 +140,7 @@ def create_field(figure: Union[go.Figure, None] = None, sport_field: Union[str, 
     against a realistic representation of the playing field. This function automates
     the otherwise tedious creation of playing fields, and can then be used either
     as input to other functions in this library or for custom plots of your own.
+
     Parameters
     ----------
     figure
@@ -275,7 +267,7 @@ def plot_frame(
     team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
     fig: Union[None, go.Figure, Field, str] = None,
 ):
-    """
+    """Make a static plot of a frame of data.
 
     Parameters
     ----------
@@ -393,6 +385,7 @@ def _generate_markers(
     team_abbreviations: Union[pd.Series, None],
     abbreviation_lookup_table: Dict[str, TeamColors] = NFL_TEAM_COLORS,
 ):
+    """generate marker colors based on what team a player is on as well as if they are home or away."""
     # Set defaults:
     home_marker_color = np.tile(np.array(["gainsboro"], dtype="U40"), len(is_home))
     home_marker_edge_color = np.tile(np.array(["darkslategray"], dtype="U40"), len(is_home))
@@ -431,11 +424,7 @@ def _get_style_information(
     team_column: Union[None, np.array],
     team_color_mapping: Dict[str, TeamColors],
 ):
-    """
-    Warning
-    -------
-    Team color mapping is unoptimized and should not be used on large datasets
-    """
+    """Generate basic marker color, symbol, and size information."""
 
     # Marker styling
     marker_color, marker_edge_color, marker_textfont_color = _generate_markers(is_home, team_column, team_color_mapping)
@@ -446,6 +435,8 @@ def _get_style_information(
 
 
 def _make_sliders(frame_names: Sequence, slider_labels: Sequence, **slider_kwargs):
+    """Make the slider widget for an animation"""
+
     if len(frame_names) != len(slider_labels):
         raise IndexError("Frame names and slider labels must have same length")
     if "steps" in slider_kwargs:

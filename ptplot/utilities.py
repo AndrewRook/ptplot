@@ -21,6 +21,7 @@ class DaskCompatibilityWarning(UserWarning):  # pragma: no cover
 
 
 def warn_if_dask(input_dataframe):  # pragma: no cover
+    """raise a warning if error checking is disabled due to the usage of dask."""
     if type(input_dataframe) == dd.DataFrame:
         warnings.warn(
             "Error checking suppressed with dask dataframes to prevent " "unnecessary compute calls",
@@ -29,6 +30,7 @@ def warn_if_dask(input_dataframe):  # pragma: no cover
 
 
 def get_path_midpoint(path):  # pragma: no cover
+    """Get the midpoint of an svg path bounding box"""
     min_x, max_x, min_y, max_y = path.bbox()
     midpoint_x = (max_x + min_x) / 2
     midpoint_y = (max_y + min_y) / 2
@@ -45,9 +47,25 @@ def make_hline(x0, x1, y, **kwargs):  # pragma: no cover
     return dict(type="line", y0=y, y1=y, x0=x0, x1=x1, **kwargs)
 
 
-def generate_time_elapsed_labels(time_zeropoint, time_column_name, formatting="{:.2f} s"):
+def generate_time_elapsed_labels(time_zeropoint: pd.Timestamp, time_column_name: str, formatting: str = "{:.2f} s"):
     """Create a function that can be used in plotting animations to show time elapsed compared
     to a user-defined zeropoint.
+
+    Parameters
+    ----------
+    time_zeropoint
+        The time to use as the zeropoint. For example, the timestamp of the first frame of a play.
+    time_column_name
+        The name of the column in the data that has timestamps.
+    formatting
+        All times are returned in seconds, but using formatting you can control the precision and
+        add any additional text you would like. The default is to display a floating point number with
+        two digits past the decimal point, then add a space and an "s".
+
+    Returns
+    -------
+    function
+        A function which takes in a frame of data and returns the formatted time difference.
     """
 
     def time_elapsed_function(frame_data):
@@ -64,11 +82,32 @@ def generate_time_elapsed_labels(time_zeropoint, time_column_name, formatting="{
 
 def generate_labels_from_columns(
     columns: Sequence[str],
-    column_formatting: Union[Sequence[str], None] = None,
+    column_formatting: Union[Sequence[Union[str, None]], None] = None,
     separator: str = " ",
     na_rep: Union[str, None] = None,
 ):
-    """Concatenate columns of a dataframe together to create formatted text labels."""
+    """Concatenate columns of a dataframe together to create formatted text labels.
+
+    Parameters
+    ----------
+    columns
+        An iterable of column names representing the column in the data you want to use
+        as the labels.
+    column_formatting
+        If not ``None``, an iterable of format specifications for each column in ``columns``.
+        For example, ``[None, "- {:.2f}"]`` might be appropriate for a string column and a
+        float column.
+    separator
+        The character or characters used to separate every column in the labels. For no separation,
+        use ``""``.
+    na_rep
+        Passed to ``pd.DataFrame.str.cat``.
+
+    Returns
+    -------
+    function
+        A function that takes in a frame of data and returns a formatted label for every row.
+    """
     if column_formatting is not None and len(columns) != len(column_formatting):
         raise IndexError("If column_formatting is used, must have the same length as columns")
     if column_formatting is None:
