@@ -89,41 +89,29 @@ def animate_play(
     fig.frames = frame_plots
 
     # Add animation controls
+    buttons = _make_control_buttons(100, fig.frames[0].name)
     fig.update_layout(
         updatemenus=[
+            buttons,
             dict(
-                type="buttons",
-                direction="left",
-                yanchor="bottom",
-                xanchor="left",
-                x=0.05,
-                y=-0.17,
-                buttons=[
-                    dict(
-                        label="Play",
-                        method="animate",
-                        args=[
-                            None,
-                            {
-                                "frame": {"duration": 100, "redraw": False},
-                                "fromcurrent": True,
-                            },
-                        ],
-                    ),
-                    {
-                        "args": [
-                            [None],
-                            {
-                                "frame": {"duration": 0, "redraw": False},
-                                "mode": "immediate",
-                                "transition": {"duration": 0},
-                            },
-                        ],
-                        "label": "Pause",
-                        "method": "animate",
-                    },
-                ],
-            )
+                active=0,
+                buttons=list(
+                    [
+                        dict(
+                            label="snap",
+                            method="animate",
+                            args=[
+                                [20],
+                                {
+                                    "frame": {"duration": 0, "redraw": False},
+                                    "mode": "immediate",
+                                    "transition": {"duration": 0},
+                                },
+                            ],
+                        )
+                    ]
+                ),
+            ),
         ],
         sliders=_make_sliders([frame.name for frame in fig.frames], slider_labels),
     )
@@ -434,8 +422,55 @@ def _get_style_information(
     return marker_color, marker_edge_color, marker_textfont_color, marker_width, marker_size, marker_symbol
 
 
+def _make_control_buttons(frame_durations, first_frame_name: Union[str, None] = None, **button_kwargs):
+    """Make the play/pause and optional reset buttons for an animation."""
+    buttons = [
+        dict(
+            label="Play",
+            method="animate",
+            args=[
+                None,
+                {"frame": {"duration": frame_durations, "redraw": False}, "mode": "immediate", "fromcurrent": True},
+            ],
+        ),
+        dict(
+            label="Pause",
+            method="animate",
+            args=[
+                [None],
+                {
+                    "frame": {"duration": 0, "redraw": False},
+                    "mode": "immediate",
+                    "transition": {"duration": 0},
+                },
+            ],
+        ),
+    ]
+    if first_frame_name is not None:
+        buttons += [
+            dict(
+                label="Reset",
+                method="animate",
+                args=[
+                    [first_frame_name],
+                    {"frame": {"duration": 10, "redraw": False}, "mode": "immediate", "transition": {"duration": 10}},
+                ],
+            )
+        ]
+
+    button_kwargs["type"] = button_kwargs.get("type", "buttons")
+    button_kwargs["direction"] = button_kwargs.get("direction", "left")
+    button_kwargs["yanchor"] = button_kwargs.get("yanchor", "bottom")
+    button_kwargs["xanchor"] = button_kwargs.get("xanchor", "left")
+    button_kwargs["y"] = button_kwargs.get("y", -0.17)
+    button_kwargs["x"] = button_kwargs.get("x", 0.05)
+
+    buttons = {**button_kwargs, "buttons": buttons}
+    return buttons
+
+
 def _make_sliders(frame_names: Sequence, slider_labels: Sequence, **slider_kwargs):
-    """Make the slider widget for an animation"""
+    """Make the slider widget for an animation."""
 
     if len(frame_names) != len(slider_labels):
         raise IndexError("Frame names and slider labels must have same length")
@@ -446,10 +481,10 @@ def _make_sliders(frame_names: Sequence, slider_labels: Sequence, **slider_kwarg
             "args": [
                 [frame_name],
                 {
-                    "frame": {"duration": 100},
+                    "frame": {"duration": 100, "redraw": False},
                     "mode": "immediate",
                     "fromcurrent": True,
-                    "transition": {"duration": 100, "easing": "cubic-out"},
+                    "transition": {"duration": 100},
                 },
             ],
             "label": slider_labels[i],
@@ -458,8 +493,8 @@ def _make_sliders(frame_names: Sequence, slider_labels: Sequence, **slider_kwarg
         for i, frame_name in enumerate(frame_names)
     ]
 
-    slider_kwargs["len"] = slider_kwargs.get("len", 0.7)
-    slider_kwargs["x"] = slider_kwargs.get("x", 0.2)
+    slider_kwargs["len"] = slider_kwargs.get("len", 0.6)
+    slider_kwargs["x"] = slider_kwargs.get("x", 0.3)
     slider_kwargs["y"] = slider_kwargs.get("y", 0.05)
 
     sliders = [{**slider_kwargs, "steps": slider_steps}]
