@@ -25,7 +25,7 @@ def animate_play(
     fig=None,
     team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
     slider_label_generator: Union[None, Callable] = None,
-    events_of_interest: Union[None, str, Callable] = None
+    events_of_interest: Union[None, str, Callable] = None,
 ):
     """
     Animate a play. Player and ball positions are represented by moving
@@ -105,7 +105,7 @@ def animate_play(
             unique_events_in_frame = pd.unique(event_in_frame)
             if len(unique_events_in_frame) != 1:
                 raise KeyError(f"Multiple events in frame {frame_id}. Got {unique_events_in_frame}")
-            #print(unique_events_in_frame, pd.isnull(unique_events_in_frame[0]), unique_events_in_frame[0].lower())
+            # print(unique_events_in_frame, pd.isnull(unique_events_in_frame[0]), unique_events_in_frame[0].lower())
             if pd.isnull(unique_events_in_frame[0]) is False and unique_events_in_frame[0].lower() != "none":
                 event_mapping.append((frame_id, unique_events_in_frame[0]))
     fig.frames = frame_plots
@@ -119,19 +119,20 @@ def animate_play(
             active=0,
             buttons=[
                 dict(
-                    label=event_name, method="animate",
+                    label=event_name,
+                    method="animate",
                     args=[
                         [frame_name],
                         {
                             "frame": {"duration": 10, "redraw": False},
                             "mode": "immediate",
                             "fromcurrent": "true",
-                            "transition": {"duration": 10}
-                        }
-                    ]
+                            "transition": {"duration": 10},
+                        },
+                    ],
                 )
                 for frame_name, event_name in event_mapping
-            ]
+            ],
         )
     else:
         events = None
@@ -451,7 +452,7 @@ def _make_control_buttons(frame_durations, first_frame_name: Union[str, None] = 
     """Make the play/pause and optional reset buttons for an animation."""
     buttons = [
         dict(
-            label="Play",
+            label="&#9654;",  # play symbol
             method="animate",
             args=[
                 None,
@@ -459,7 +460,7 @@ def _make_control_buttons(frame_durations, first_frame_name: Union[str, None] = 
             ],
         ),
         dict(
-            label="Pause",
+            label="&#9724;",  # pause symbol
             method="animate",
             args=[
                 [None],
@@ -474,7 +475,7 @@ def _make_control_buttons(frame_durations, first_frame_name: Union[str, None] = 
     if first_frame_name is not None:
         buttons += [
             dict(
-                label="Reset",
+                label="&#8634;",  # restart icon
                 method="animate",
                 args=[
                     [first_frame_name],
