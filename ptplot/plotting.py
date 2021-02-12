@@ -25,6 +25,7 @@ def animate_play(
     fig=None,
     team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
     slider_label_generator: Union[None, Callable] = None,
+    events_of_interest: Union[None, str, Callable] = None
 ):
     """
     Animate a play. Player and ball positions are represented by moving
@@ -41,6 +42,11 @@ def animate_play(
         If a function, apply the function to the ``data`` for each frame to generate
         slider labels. For example, the ``ptplot.utilities.generate_time_elapsed_labels``
         function.
+    events_of_interest
+        If not ``None``, add a dropdown to move the animation tagged as an event. If
+        a function, takes in the data for a frame and returns a string with the name of
+        the event in that frame or a null value. If a string, the column in the input
+        data that is non-null when a frame has an event in it.
     Other fields
         See the documentation for ``ptplot.plotting.plot_frame``
 
@@ -82,37 +88,56 @@ def animate_play(
 
     # Make the animation frames
     frame_plots = []
+    event_mapping = []
     for frame_id, frame_data in frame_groups:
         frame_plots.append(
             go.Frame(data=[go.Scatter(x=frame_data[x_column], y=frame_data[y_column])], name=str(frame_id))
         )
+        # TODO: refactor this with utilities._parse_none_callable_string, if possible
+        if events_of_interest is not None:
+            if len(event_mapping) == 0:
+                event_mapping.append((frame_id, "Reset"))
+                continue
+            try:
+                event_in_frame = events_of_interest(frame_data)
+            except TypeError:
+                event_in_frame = frame_data[events_of_interest]
+            unique_events_in_frame = pd.unique(event_in_frame)
+            if len(unique_events_in_frame) != 1:
+                raise KeyError(f"Multiple events in frame {frame_id}. Got {unique_events_in_frame}")
+            #print(unique_events_in_frame, pd.isnull(unique_events_in_frame[0]), unique_events_in_frame[0].lower())
+            if pd.isnull(unique_events_in_frame[0]) is False and unique_events_in_frame[0].lower() != "none":
+                event_mapping.append((frame_id, unique_events_in_frame[0]))
     fig.frames = frame_plots
 
     # Add animation controls
-    buttons = _make_control_buttons(100, fig.frames[0].name)
-    fig.update_layout(
-        updatemenus=[
-            buttons,
-            dict(
-                active=0,
-                buttons=list(
-                    [
-                        dict(
-                            label="snap",
-                            method="animate",
-                            args=[
-                                [20],
-                                {
-                                    "frame": {"duration": 0, "redraw": False},
-                                    "mode": "immediate",
-                                    "transition": {"duration": 0},
-                                },
-                            ],
-                        )
+    reset_name = fig.frames[0].name if events_of_interest is None else None
+    buttons = _make_control_buttons(100, reset_name)
+
+    if events_of_interest is not None:
+        events = dict(
+            active=0,
+            buttons=[
+                dict(
+                    label=event_name, method="animate",
+                    args=[
+                        [frame_name],
+                        {
+                            "frame": {"duration": 10, "redraw": False},
+                            "mode": "immediate",
+                            "fromcurrent": "true",
+                            "transition": {"duration": 10}
+                        }
                     ]
-                ),
-            ),
-        ],
+                )
+                for frame_name, event_name in event_mapping
+            ]
+        )
+    else:
+        events = None
+
+    fig.update_layout(
+        updatemenus=[buttons] if events is None else [buttons, events],
         sliders=_make_sliders([frame.name for frame in fig.frames], slider_labels),
     )
     return fig
