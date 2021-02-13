@@ -112,18 +112,15 @@ def animate_play(
 
     # Add animation controls
     reset_name = fig.frames[0].name if events_of_interest is None else None
-    buttons = _make_control_buttons(100, reset_name)
-    control_width_alloted = 0.135 if events_of_interest is None else 0.09
-
     if events_of_interest is not None:
         events = dict(
             active=0,
-            direction="up",
+            direction="down",
             pad={"b": 10, "t": 30},
-            xanchor="left",
+            xanchor="right",
             yanchor="top",
-            x=control_width_alloted,
-            y=0,
+            x=1,
+            y=1.28,
             buttons=[
                 dict(
                     label=event_name,
@@ -141,16 +138,15 @@ def animate_play(
                 for frame_name, event_name in event_mapping
             ],
         )
-        # TODO: figure out better way to scale this
-        control_width_alloted += len(max([name for _, name in event_mapping])) / 35
     else:
         events = None
+    buttons = _make_control_buttons(100, reset_name)
 
     fig.update_layout(
         updatemenus=[buttons] if events is None else [buttons, events],
         sliders=_make_sliders(
             [frame.name for frame in fig.frames], slider_labels,
-            x=control_width_alloted, len=(1-control_width_alloted)
+            #x=control_width_alloted, len=(1-control_width_alloted)
         ),
     )
     return fig
@@ -498,12 +494,11 @@ def _make_control_buttons(frame_durations, first_frame_name: Union[str, None] = 
 
     button_kwargs["type"] = button_kwargs.get("type", "buttons")
     button_kwargs["direction"] = button_kwargs.get("direction", "left")
-
     button_kwargs["pad"] = button_kwargs.get("pad", {"b": 10, "t": 30})
     button_kwargs["xanchor"] = button_kwargs.get("xanchor", "left")
     button_kwargs["yanchor"] = button_kwargs.get("yanchor", "top")
-    button_kwargs["x"] = button_kwargs.get("x", 0.0)
-    button_kwargs["y"] = button_kwargs.get("y", 0)
+    button_kwargs["x"] = button_kwargs.get("x", 0)
+    button_kwargs["y"] = button_kwargs.get("y", 1.28)
 
     buttons = {**button_kwargs, "buttons": buttons}
     return buttons
@@ -535,9 +530,9 @@ def _make_sliders(frame_names: Sequence, slider_labels: Sequence, **slider_kwarg
 
     slider_kwargs["xanchor"] = slider_kwargs.get("xanchor", "left")
     slider_kwargs["yanchor"] = slider_kwargs.get("yanchor", "top")
-    slider_kwargs["y"] = slider_kwargs.get("y", 0.0)
-    slider_kwargs["x"] = slider_kwargs.get("x", 0.5)
-    slider_kwargs["len"] = slider_kwargs.get("len", 0.5)
+    slider_kwargs["y"] = slider_kwargs.get("y", 0)
+    slider_kwargs["x"] = slider_kwargs.get("x", 0.01)
+    slider_kwargs["len"] = slider_kwargs.get("len", 0.98)
     slider_kwargs["pad"] = slider_kwargs.get("pad", {"b": 10, "t": 5})
 
     sliders = [{**slider_kwargs, "steps": slider_steps}]
