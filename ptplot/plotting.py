@@ -196,6 +196,7 @@ def create_field(figure: Union[go.Figure, None] = None, sport_field: Union[str, 
     field_parameters = sport_field if type(sport_field) == Field else SPORT_FIELD_MAPPING[sport_field.lower()]
 
     figure.update_layout(
+        margin={"l": 5, "r": 5, "t": 100, "b": 80},
         xaxis_showgrid=False,
         yaxis_showgrid=False,  # remove grid lines
         xaxis_zeroline=False,
