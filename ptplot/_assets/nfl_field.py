@@ -7,6 +7,7 @@ from .core import Field
 
 FIELD_LENGTH = 120
 FIELD_WIDTH = 53.3
+BACKGROUND_COLOR = "rgb(195,217,192)"  # "rgb(62, 126, 0)"
 
 """In order to have the field numbers (the 10, 20, 30, 40, 50) scale properly with
 field size, they need to be rendered as SVG shapes. This dictionary maps the numbers
@@ -190,4 +191,4 @@ def _make_field_lines_markers():
     return field_lines + field_numbers + field_indicators
 
 
-FIELD = Field(FIELD_LENGTH, FIELD_WIDTH, _make_field_lines_markers(), "rgb(195,217,192)")  # "rgb(62, 126, 0)"
+FIELD = Field(FIELD_LENGTH, FIELD_WIDTH, _make_field_lines_markers(), BACKGROUND_COLOR)
