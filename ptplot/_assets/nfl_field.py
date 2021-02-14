@@ -108,14 +108,16 @@ FIELD_NUMBER_PATHS = {
 }
 
 
-def _make_field_lines_markers():
+def _make_field_lines_markers(vertical_field=False):
+    field_horizontal_length = FIELD_LENGTH if not vertical_field else FIELD_WIDTH
+    field_vertical_length = FIELD_WIDTH if not vertical_field else FIELD_LENGTH
     # First, make the field border:
     field_kwargs = {"line_width": 5, "line_color": "white", "layer": "below"}
     field_border = [
-        make_hline(0, FIELD_LENGTH, 0, **field_kwargs),
-        make_hline(0, FIELD_LENGTH, FIELD_WIDTH, **field_kwargs),
-        make_vline(0, FIELD_WIDTH, 0, **field_kwargs),
-        make_vline(0, FIELD_WIDTH, FIELD_LENGTH, **field_kwargs),
+        make_hline(0, field_horizontal_length, 0, **field_kwargs),
+        make_hline(0, field_horizontal_length, field_vertical_length, **field_kwargs),
+        make_vline(0, field_vertical_length, 0, **field_kwargs),
+        make_vline(0, field_vertical_length, field_horizontal_length, **field_kwargs),
     ]
 
     # Now make the yard and hash lines:
@@ -130,65 +132,65 @@ def _make_field_lines_markers():
         for w in [1, 23.58333, 23.58333 + hash_length - hash_width, 52.3 - hash_width]
     ]
 
-    field_lines = field_border + five_yard_lines + one_yard_lines
-
-    number_kwargs = {"line_color": "white", "fillcolor": "white", "layer": "below"}
-    number_x_location_mapping = {
-        20: FIELD_NUMBER_PATHS["one"],
-        30: FIELD_NUMBER_PATHS["two"],
-        40: FIELD_NUMBER_PATHS["three"],
-        50: FIELD_NUMBER_PATHS["four"],
-        60: FIELD_NUMBER_PATHS["five"],
-        70: FIELD_NUMBER_PATHS["four"],
-        80: FIELD_NUMBER_PATHS["three"],
-        90: FIELD_NUMBER_PATHS["two"],
-        100: FIELD_NUMBER_PATHS["one"],
-    }
-    field_numbers = [
-        [
-            dict(type="path", path=value.translated(key - 2.7 + 4j).d(), **number_kwargs),
-            dict(type="path", path=FIELD_NUMBER_PATHS["zero"].translated(key + 0.5 + 4j).d(), **number_kwargs),
-            dict(type="path", path=FIELD_NUMBER_PATHS["zero"].translated(key - 3 + 47j).d(), **number_kwargs),
-            dict(
-                type="path",
-                path=value.rotated(180, get_path_midpoint(value)).translated(key + 0.5 + 47j).d(),
-                **number_kwargs,
-            ),
-        ]
-        for key, value in number_x_location_mapping.items()
-    ]
-    # Flatten
-    field_numbers = sum(field_numbers, [])
-
-    # Numbers and arrows
-    field_indicators = [
-        [
-            dict(
-                type="path",
-                path=f"M {xval - 3.2} 5.2 L {xval - 3.7} 5.45 L {xval - 3.2} 5.7 L {xval - 3.2} 5.2 Z",
-                **number_kwargs,
-            ),
-            dict(
-                type="path",
-                path=f"M {120 - xval + 3.6} 5.2 L {120 -xval + 4.1} 5.45 L {120 - xval + 3.6} 5.7 L {120 - xval + 3.6} 5.2 Z",  # noqa: E501
-                **number_kwargs,
-            ),
-            dict(
-                type="path",
-                path=f"M {xval - 3.6} 48.5 L {xval - 4.1} 48.25 L {xval - 3.6} 48.0 L {xval - 3.6} 48.5 Z",
-                **number_kwargs,
-            ),
-            dict(
-                type="path",
-                path=f"M {120 - xval + 3.2} 48.5 L {120 - xval + 3.7} 48.25 L {120 - xval + 3.2} 48.0 L {120 - xval + 3.2} 48.5 Z",  # noqa: E501
-                **number_kwargs,
-            ),
-        ]
-        for xval in [20, 30, 40, 50]
-    ]
-    # Flatten
-    field_indicators = sum(field_indicators, [])
-    return field_lines + field_numbers + field_indicators
+    field_lines = field_border# + five_yard_lines + one_yard_lines
+    #
+    # number_kwargs = {"line_color": "white", "fillcolor": "white", "layer": "below"}
+    # number_x_location_mapping = {
+    #     20: FIELD_NUMBER_PATHS["one"],
+    #     30: FIELD_NUMBER_PATHS["two"],
+    #     40: FIELD_NUMBER_PATHS["three"],
+    #     50: FIELD_NUMBER_PATHS["four"],
+    #     60: FIELD_NUMBER_PATHS["five"],
+    #     70: FIELD_NUMBER_PATHS["four"],
+    #     80: FIELD_NUMBER_PATHS["three"],
+    #     90: FIELD_NUMBER_PATHS["two"],
+    #     100: FIELD_NUMBER_PATHS["one"],
+    # }
+    # field_numbers = [
+    #     [
+    #         dict(type="path", path=value.translated(key - 2.7 + 4j).d(), **number_kwargs),
+    #         dict(type="path", path=FIELD_NUMBER_PATHS["zero"].translated(key + 0.5 + 4j).d(), **number_kwargs),
+    #         dict(type="path", path=FIELD_NUMBER_PATHS["zero"].translated(key - 3 + 47j).d(), **number_kwargs),
+    #         dict(
+    #             type="path",
+    #             path=value.rotated(180, get_path_midpoint(value)).translated(key + 0.5 + 47j).d(),
+    #             **number_kwargs,
+    #         ),
+    #     ]
+    #     for key, value in number_x_location_mapping.items()
+    # ]
+    # # Flatten
+    # field_numbers = sum(field_numbers, [])
+    #
+    # # Numbers and arrows
+    # field_indicators = [
+    #     [
+    #         dict(
+    #             type="path",
+    #             path=f"M {xval - 3.2} 5.2 L {xval - 3.7} 5.45 L {xval - 3.2} 5.7 L {xval - 3.2} 5.2 Z",
+    #             **number_kwargs,
+    #         ),
+    #         dict(
+    #             type="path",
+    #             path=f"M {120 - xval + 3.6} 5.2 L {120 -xval + 4.1} 5.45 L {120 - xval + 3.6} 5.7 L {120 - xval + 3.6} 5.2 Z",  # noqa: E501
+    #             **number_kwargs,
+    #         ),
+    #         dict(
+    #             type="path",
+    #             path=f"M {xval - 3.6} 48.5 L {xval - 4.1} 48.25 L {xval - 3.6} 48.0 L {xval - 3.6} 48.5 Z",
+    #             **number_kwargs,
+    #         ),
+    #         dict(
+    #             type="path",
+    #             path=f"M {120 - xval + 3.2} 48.5 L {120 - xval + 3.7} 48.25 L {120 - xval + 3.2} 48.0 L {120 - xval + 3.2} 48.5 Z",  # noqa: E501
+    #             **number_kwargs,
+    #         ),
+    #     ]
+    #     for xval in [20, 30, 40, 50]
+    # ]
+    # # Flatten
+    # field_indicators = sum(field_indicators, [])
+    return field_lines #+ field_numbers + field_indicators
 
 
 FIELD = Field(FIELD_LENGTH, FIELD_WIDTH, _make_field_lines_markers(), BACKGROUND_COLOR)
