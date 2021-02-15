@@ -287,18 +287,77 @@ def plot_tracks(
     team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
     fig: Union[None, go.Figure, Field, str] = None,
 ):
+    """Make a static plot showing player tracks over the course of the play.
 
-    # First, parse out all of the optional arguments:
-    is_ball = _parse_none_callable_string(ball_identifier, data, False)
-    mode = "lines"
+    Parameters
+    ----------
+    data
+        The data for the given set of tracks.
+    x_column
+        The name of the column in ``data`` that contains x-axis values
+    y_column
+        The name of the column in ``data`` that contains y-axis values
+    player_column
+        The name of the column in ``data`` that contains player names (or whatever will be used
+        to split the tracks up)
+    hover_text
+        Either ``None`` for no special hover text (will still show x/y coordinates),
+        a function which takes in `data` and returns an array of string labels, or a string
+        indicating a column of ``data`` that contains the labels.
+        For example, the output of the ``ptplot.utilities.generate_labels_from_columns``
+        function.
+    ball_identifier
+        Either ``None`` for no special marker for the ball, a function which takes in
+        `data` and returns a boolean array where ``True`` indicates a row with data
+        for the ball, or a string indicating the column of ``data`` with those booleans.
+        For example, ``lambda data: data["displayName"] == "Football"``.
+        Also, see note below about available ball markers.
+    home_away_identifier
+        Either ``None`` for no home/away color-coding, a function which takes in ``data`` and
+        returns a boolean array where ``True`` indicates a row with the home team and ``False``
+        is a row with the away team, or a string indicating the column of ``data`` with those
+        booleans. For example, ``lambda data: data["team"] == "home"``.
+        If ``ball_identifier`` is set, whatever value assigned to the
+        ball will override the value assigned by this function.
+    team_abbreviations
+        Either ``None`` to not color-code players by team, a function which takes in ``data`` and
+        returns a string array of team abbreviations, or a string indicating the column of
+        ``data`` that contains the abbreviations.
+    team_color_mapping
+        A dictionary mapping team abbreviations to team colors. Defaults to NFL teams.
+    fig
+        If an instance of ``plotly.graph_objects.Figure``,
+        plot on top of that figure. Otherwise corresponds to the ``sport_field`` keyword argument
+        of ``ptplot.plotting.create_field``.
 
-    team_abbreviations = (
-        # A little different because abbreviations are all-or-nothing
-        team_abbreviations
-        if team_abbreviations is None
-        else _parse_none_callable_string(team_abbreviations, data, "NA")
+    Returns
+    -------
+    plotly.graph_objects.Figure
+        A Plotly Figure with player tracks shown. If the user passes in a
+        Figure, this will be the same Figure.
+
+    Warnings
+    --------
+    All data must be passed into the function in chronological order, otherwise lines may not be
+    drawn correctly.
+
+    """
+    # Get all the unique players/balls:
+    player_specific_data = data.drop_duplicates(subset=[player_column], ignore_index=True)
+    styling_data = pd.DataFrame(
+        {
+            "is_ball": _parse_none_callable_string(ball_identifier, player_specific_data, False),
+            "is_home": _parse_none_callable_string(home_away_identifier, player_specific_data, True),
+            "team": _parse_none_callable_string(team_abbreviations, player_specific_data, None),
+        },
+        index=player_specific_data[player_column].values,
     )
-    home_away_flag = _parse_none_callable_string(home_away_identifier, data, True)
+    styling_data["color"] = lookup_team_colors(styling_data["team"], team_color_mapping, 1, null_team_colors=["brown"])[
+        0
+    ]
+    styling_dict = styling_data.to_dict("index")
+
+    mode = "lines"
 
     if fig is None:
         fig = create_field()
@@ -307,8 +366,8 @@ def plot_tracks(
 
     player_groups = data.groupby(player_column)
     for player_name, player_data in player_groups:
+        player_styles = styling_dict[player_name]
         hover_text_ = _parse_none_callable_string(hover_text, player_data, "")
-        #print(hover_text_)
         fig.add_trace(
             go.Scatter(
                 x=player_data[x_column],
@@ -317,10 +376,11 @@ def plot_tracks(
                 text=hover_text_,
                 hovertemplate="%{text}<extra></extra>",
                 showlegend=False,
-                opacity=0.5,
+                opacity=0.85 if player_styles["is_home"] else 0.6,
                 line={
-                    "color": "red",
-                    "width": 2
+                    "color": player_styles["color"],
+                    "width": 3,
+                    "dash": "dash" if player_styles["is_ball"] else None,
                 },
             )
         )
