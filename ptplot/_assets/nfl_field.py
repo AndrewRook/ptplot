@@ -213,3 +213,4 @@ def _make_field_lines_markers(vertical_field=False):
 
 
 FIELD = Field(FIELD_LENGTH, FIELD_WIDTH, _make_field_lines_markers(), BACKGROUND_COLOR)
+VERTICAL_FIELD = Field(FIELD_WIDTH, FIELD_LENGTH, _make_field_lines_markers(vertical_field=True), BACKGROUND_COLOR)
