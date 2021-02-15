@@ -5,11 +5,11 @@ import plotly.graph_objects as go
 from typing import Callable, Dict, Sequence, Union
 
 from ._assets.core import Field
-from ._assets.nfl_field import FIELD as NFL_FIELD
+from ._assets.nfl_field import FIELD as NFL_FIELD, VERTICAL_FIELD as VERTICAL_NFL_FIELD
 from ._assets.nfl_teams import TeamColors, TEAM_COLORS as NFL_TEAM_COLORS
 from .utilities import _parse_none_callable_string
 
-SPORT_FIELD_MAPPING = {"nfl": NFL_FIELD}
+SPORT_FIELD_MAPPING = {"nfl": NFL_FIELD, "nfl_vertical": VERTICAL_NFL_FIELD}
 
 
 def animate_play(
@@ -144,9 +144,7 @@ def animate_play(
 
     fig.update_layout(
         updatemenus=[buttons] if events is None else [buttons, events],
-        sliders=_make_sliders(
-            [frame.name for frame in fig.frames], slider_labels
-        ),
+        sliders=_make_sliders([frame.name for frame in fig.frames], slider_labels),
     )
     return fig
 
