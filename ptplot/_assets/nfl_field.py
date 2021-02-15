@@ -109,88 +109,107 @@ FIELD_NUMBER_PATHS = {
 
 
 def _make_field_lines_markers(vertical_field=False):
-    field_horizontal_length = FIELD_LENGTH if not vertical_field else FIELD_WIDTH
-    field_vertical_length = FIELD_WIDTH if not vertical_field else FIELD_LENGTH
+    width_line_generator = make_vline if not vertical_field else make_hline
+    length_line_generator = make_hline if not vertical_field else make_vline
     # First, make the field border:
     field_kwargs = {"line_width": 5, "line_color": "white", "layer": "below"}
     field_border = [
-        make_hline(0, field_horizontal_length, 0, **field_kwargs),
-        make_hline(0, field_horizontal_length, field_vertical_length, **field_kwargs),
-        make_vline(0, field_vertical_length, 0, **field_kwargs),
-        make_vline(0, field_vertical_length, field_horizontal_length, **field_kwargs),
+        length_line_generator(0, FIELD_LENGTH, 0, **field_kwargs),
+        length_line_generator(0, FIELD_LENGTH, FIELD_WIDTH, **field_kwargs),
+        width_line_generator(0, FIELD_WIDTH, 0, **field_kwargs),
+        width_line_generator(0, FIELD_WIDTH, FIELD_LENGTH, **field_kwargs),
     ]
 
     # Now make the yard and hash lines:
     line_kwargs = {"line_width": 2, "line_color": "white", "layer": "below"}
-    five_yard_lines = [make_vline(0, FIELD_WIDTH, 5 * i, **line_kwargs) for i in range(2, 23)]
+    five_yard_lines = [width_line_generator(0, FIELD_WIDTH, 5 * i, **line_kwargs) for i in range(2, 23)]
     hash_width = 2 / 3  # Hashes are 2/3rds of a yard
     hash_length = 6 + 6 / 36  # six yards, six inches
     one_yard_lines = [
-        make_vline(w, w + hash_width, i, **line_kwargs)
+        width_line_generator(w, w + hash_width, i, **line_kwargs)
         for i in range(10, 111)
         if i % 10 != 0
         for w in [1, 23.58333, 23.58333 + hash_length - hash_width, 52.3 - hash_width]
     ]
 
-    field_lines = field_border# + five_yard_lines + one_yard_lines
-    #
-    # number_kwargs = {"line_color": "white", "fillcolor": "white", "layer": "below"}
-    # number_x_location_mapping = {
-    #     20: FIELD_NUMBER_PATHS["one"],
-    #     30: FIELD_NUMBER_PATHS["two"],
-    #     40: FIELD_NUMBER_PATHS["three"],
-    #     50: FIELD_NUMBER_PATHS["four"],
-    #     60: FIELD_NUMBER_PATHS["five"],
-    #     70: FIELD_NUMBER_PATHS["four"],
-    #     80: FIELD_NUMBER_PATHS["three"],
-    #     90: FIELD_NUMBER_PATHS["two"],
-    #     100: FIELD_NUMBER_PATHS["one"],
-    # }
-    # field_numbers = [
-    #     [
-    #         dict(type="path", path=value.translated(key - 2.7 + 4j).d(), **number_kwargs),
-    #         dict(type="path", path=FIELD_NUMBER_PATHS["zero"].translated(key + 0.5 + 4j).d(), **number_kwargs),
-    #         dict(type="path", path=FIELD_NUMBER_PATHS["zero"].translated(key - 3 + 47j).d(), **number_kwargs),
-    #         dict(
-    #             type="path",
-    #             path=value.rotated(180, get_path_midpoint(value)).translated(key + 0.5 + 47j).d(),
-    #             **number_kwargs,
-    #         ),
-    #     ]
-    #     for key, value in number_x_location_mapping.items()
-    # ]
-    # # Flatten
-    # field_numbers = sum(field_numbers, [])
-    #
-    # # Numbers and arrows
-    # field_indicators = [
-    #     [
-    #         dict(
-    #             type="path",
-    #             path=f"M {xval - 3.2} 5.2 L {xval - 3.7} 5.45 L {xval - 3.2} 5.7 L {xval - 3.2} 5.2 Z",
-    #             **number_kwargs,
-    #         ),
-    #         dict(
-    #             type="path",
-    #             path=f"M {120 - xval + 3.6} 5.2 L {120 -xval + 4.1} 5.45 L {120 - xval + 3.6} 5.7 L {120 - xval + 3.6} 5.2 Z",  # noqa: E501
-    #             **number_kwargs,
-    #         ),
-    #         dict(
-    #             type="path",
-    #             path=f"M {xval - 3.6} 48.5 L {xval - 4.1} 48.25 L {xval - 3.6} 48.0 L {xval - 3.6} 48.5 Z",
-    #             **number_kwargs,
-    #         ),
-    #         dict(
-    #             type="path",
-    #             path=f"M {120 - xval + 3.2} 48.5 L {120 - xval + 3.7} 48.25 L {120 - xval + 3.2} 48.0 L {120 - xval + 3.2} 48.5 Z",  # noqa: E501
-    #             **number_kwargs,
-    #         ),
-    #     ]
-    #     for xval in [20, 30, 40, 50]
-    # ]
-    # # Flatten
-    # field_indicators = sum(field_indicators, [])
-    return field_lines #+ field_numbers + field_indicators
+    field_lines = field_border + five_yard_lines + one_yard_lines
+
+    number_kwargs = {"line_color": "white", "fillcolor": "white", "layer": "below"}
+    number_length_location_mapping = {
+        20: FIELD_NUMBER_PATHS["one"],
+        30: FIELD_NUMBER_PATHS["two"],
+        40: FIELD_NUMBER_PATHS["three"],
+        50: FIELD_NUMBER_PATHS["four"],
+        60: FIELD_NUMBER_PATHS["five"],
+        70: FIELD_NUMBER_PATHS["four"],
+        80: FIELD_NUMBER_PATHS["three"],
+        90: FIELD_NUMBER_PATHS["two"],
+        100: FIELD_NUMBER_PATHS["one"],
+    }
+    number_length_offsets = [-2.7, 0.5] if not vertical_field else [-3.2, 0.5]
+    zero_length_offsets = [0.5, -2.4] if not vertical_field else [0.4, -2.9]
+    width_offsets = [4, 47] if not vertical_field else [47, 4]
+    rotations = [0, 180] if not vertical_field else [90, 270]
+    field_numbers = []
+
+    for length_location, number in number_length_location_mapping.items():
+        number_offsets = [
+            complex(length_location + length_offset, width_offset)
+            if not vertical_field
+            else complex(width_offset, length_location + length_offset)
+            for length_offset, width_offset in zip(number_length_offsets, width_offsets)
+        ]
+        zero_offsets = [
+            complex(length_location + length_offset, width_offset)
+            if not vertical_field
+            else complex(width_offset, length_location + length_offset)
+            for length_offset, width_offset in zip(zero_length_offsets, width_offsets)
+        ]
+        field_numbers += [
+            dict(
+                type="path",
+                path=number.rotated(rotation, get_path_midpoint(number)).translated(offset).d(),
+                **number_kwargs
+            )
+            for rotation, offset in zip(rotations, number_offsets)
+        ]
+        field_numbers += [
+            dict(
+                type="path",
+                path=FIELD_NUMBER_PATHS["zero"].rotated(rotation, get_path_midpoint(number)).translated(offset).d(),
+                **number_kwargs
+            )
+            for rotation, offset in zip(rotations, zero_offsets)
+        ]
+
+    # TODO: Figure out why arrow offsets are screwy when using a vertical field.
+    arrow = parse_path("M 0.4 -0.20 L -0.4 0 L 0.4 0.20 L 0.4 -0.20 Z")
+    arrow_length_offsets = (
+        [16.5, 26.5, 36.5, 46.5, 73.8, 83.8, 93.8, 103.8]
+        if not vertical_field
+        else [16.1, 26.1, 36.1, 46.1, 73.8, 83.8, 93.8, 103.8]
+    )
+    arrow_rotations = [0, 0, 0, 0, 180, 180, 180, 180]
+    arrow_width_offsets = [5.2] * len(arrow_length_offsets)
+    arrow_length_offsets += [FIELD_LENGTH - offset for offset in arrow_length_offsets]
+    arrow_rotations += arrow_rotations[::-1]
+    arrow_width_offsets += ([48.5] if not vertical_field else [48.1]) * len(arrow_width_offsets)
+    field_indicators = [
+        dict(
+            type="path",
+            path=arrow.rotated(rotation, 0).translated(complex(length_offset, width_offset)).d(),
+            **number_kwargs
+        )
+        if not vertical_field
+        else dict(
+            type="path",
+            path=arrow.rotated(rotation + 90, 0).translated(complex(width_offset, length_offset)).d(),
+            **number_kwargs
+        )
+        for length_offset, rotation, width_offset in zip(arrow_length_offsets, arrow_rotations, arrow_width_offsets)
+    ]
+
+    return field_lines + field_numbers + field_indicators
 
 
 FIELD = Field(FIELD_LENGTH, FIELD_WIDTH, _make_field_lines_markers(), BACKGROUND_COLOR)

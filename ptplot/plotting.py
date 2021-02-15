@@ -144,9 +144,7 @@ def animate_play(
 
     fig.update_layout(
         updatemenus=[buttons] if events is None else [buttons, events],
-        sliders=_make_sliders(
-            [frame.name for frame in fig.frames], slider_labels
-        ),
+        sliders=_make_sliders([frame.name for frame in fig.frames], slider_labels),
     )
     return fig
 
