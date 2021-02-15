@@ -73,7 +73,7 @@ def animate_play(
     first_frame = frame_groups.get_group(data[frame_column].min())
 
     # Use the first frame to set up all the marker stylings
-    fig = plot_frame(
+    fig = plot_positions(
         first_frame,
         x_column,
         y_column,
@@ -275,7 +275,59 @@ def lookup_team_colors(
     return list(zip(*colors_list))
 
 
-def plot_frame(
+def plot_tracks(
+    data: pd.DataFrame,
+    x_column: str,
+    y_column: str,
+    player_column: str,
+    hover_text: Union[None, str, Callable] = None,
+    ball_identifier: Union[None, str, Callable] = None,
+    home_away_identifier: Union[None, str, Callable] = None,
+    team_abbreviations: Union[None, str, Callable] = None,
+    team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
+    fig: Union[None, go.Figure, Field, str] = None,
+):
+
+    # First, parse out all of the optional arguments:
+    is_ball = _parse_none_callable_string(ball_identifier, data, False)
+    mode = "lines"
+
+    team_abbreviations = (
+        # A little different because abbreviations are all-or-nothing
+        team_abbreviations
+        if team_abbreviations is None
+        else _parse_none_callable_string(team_abbreviations, data, "NA")
+    )
+    home_away_flag = _parse_none_callable_string(home_away_identifier, data, True)
+
+    if fig is None:
+        fig = create_field()
+    elif type(fig) in [str, Field]:
+        fig = create_field(sport_field=fig)
+
+    player_groups = data.groupby(player_column)
+    for player_name, player_data in player_groups:
+        hover_text_ = _parse_none_callable_string(hover_text, player_data, "")
+        #print(hover_text_)
+        fig.add_trace(
+            go.Scatter(
+                x=player_data[x_column],
+                y=player_data[y_column],
+                mode=mode,
+                text=hover_text_,
+                hovertemplate="%{text}<extra></extra>",
+                showlegend=False,
+                opacity=0.5,
+                line={
+                    "color": "red",
+                    "width": 2
+                },
+            )
+        )
+    return fig
+
+
+def plot_positions(
     data: pd.DataFrame,
     x_column: str,
     y_column: str,
