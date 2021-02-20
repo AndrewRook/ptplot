@@ -254,7 +254,7 @@ def lookup_team_colors(
         raise IndexError(f"{num_colors_needed} colors requested; only {len(lookup_table)} colors available")
 
     colors_with_nulls = lookup_table.copy(deep=True)
-    colors_with_nulls[np.nan] = null_team_colors
+    colors_with_nulls[None] = null_team_colors
 
     # mapped_colors is a dataframe where the columns are the team_abbreviations and the
     # rows are the colors

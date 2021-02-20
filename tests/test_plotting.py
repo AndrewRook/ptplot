@@ -32,3 +32,13 @@ class TestLookupTeamColors:
         })
         pd.testing.assert_frame_equal(colors, expected_colors)
 
+    def test_works_with_null_abbreviation(self, team_color_map, constructor):
+        team_abbreviations = constructor(["NYJ", "CLE", None])
+        colors = plotting.lookup_team_colors(
+            team_abbreviations, team_color_map, 2, null_team_colors="green"
+        )
+        expected_colors = pd.DataFrame({
+            0: ["a", "g", "green"],
+            1: ["b", "h", "green"]
+        })
+        pd.testing.assert_frame_equal(colors, expected_colors)
