@@ -2,11 +2,11 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-from typing import Callable, Dict, Sequence, Union
+from typing import Callable, Sequence, Union
 
 from ._assets.core import Field
 from ._assets.nfl_field import FIELD as NFL_FIELD, VERTICAL_FIELD as VERTICAL_NFL_FIELD
-from ._assets.nfl_teams import TeamColors, TEAM_COLORS as NFL_TEAM_COLORS
+from ._assets.nfl_teams import TEAM_COLORS as NFL_TEAM_COLORS
 from .utilities import _parse_none_callable_string
 
 SPORT_FIELD_MAPPING = {"nfl": NFL_FIELD, "nfl_vertical": VERTICAL_NFL_FIELD}
@@ -23,7 +23,7 @@ def animate_play(
     team_abbreviations: Union[None, str, Callable] = None,
     uniform_number: Union[None, str, Callable] = None,
     fig=None,
-    team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
+    team_color_mapping: pd.DataFrame = NFL_TEAM_COLORS,
     slider_label_generator: Union[None, Callable] = None,
     events_of_interest: Union[None, str, Callable] = None,
 ):
@@ -211,10 +211,9 @@ def create_field(figure: Union[go.Figure, None] = None, sport_field: Union[str, 
 
 def lookup_team_colors(
     team_abbreviations: Sequence,
-    lookup_table: Dict[str, TeamColors],
+    lookup_table: pd.DataFrame,
     num_colors_needed: int,
-    team_is_home_flags: Union[Sequence, None] = None,
-    null_team_colors: Sequence = ["black", "black", "black"],
+    null_team_colors: Union[Sequence, str, None] = None,
 ):
     """Map team color information to an iterable of team identifiers.
 
@@ -228,8 +227,8 @@ def lookup_team_colors(
         An iterable of abbreviations (likely strings) of team names. For example, "CLE"
         for the Cleveland Browns.
     lookup_table
-        A dictionary which maps the abbreviations to team color schemes, with each color
-        scheme represented by a helper class called ``TeamColors``. Generally users should
+        A pandas DataFrame where the columns are the team abbreviations and the rows
+        are the colors. Generally users should
         not be creating this table themselves: instead find the scheme you need in
         ``ptplot._assets`` (for example, NFL team colors are in
         ``ptplot._assets.nfl_teams.TEAM_COLORS``).
@@ -239,40 +238,33 @@ def lookup_team_colors(
         you might only need one color. Alternatively, for animating a single play you may want
         three colors: one for the marker itself, one for the edge of the marker, and one for the
         player's number.
-    team_is_home_flags
-        An optional boolean flag where True means the team is the home team. If this flag is set,
-        the function will pull the appropriate home/away colors for each team. If this flag is
-        not set, home colors will be pulled for everyone.
     null_team_colors
         The colors to use if a team abbreviation is null. This often happens when the ball is
-        included in the list of identifiers.
+        included in the list of identifiers. If ``None``, fills all columns for null abbreviations
+        with null values. If a string, fills all columns for null abbreviations with that color.
+        If an iterable the same length as ``lookup_table``, will fill based on that lookup table.
 
     Returns
     -------
-    A list of ``num_colors_needed`` tuples, where the first tuple is the primary color for
-    each element of the ``team_abbreviations`` iterable, the second tuple is the
-    secondary color, etc.
+    A pandas DataFrame, where the rows correspond to the ``team_abbreviations`` input and the columns
+    are ``0``, ``1``, ..., ``num_colors_needed``.
 
-    Warnings
-    --------
-    This function is unoptimized, and is designed for use on small datasets only.
     """
-    colors_list = []
-    # If no flags are passed, make everyone the home team
-    team_is_home_flags = (
-        np.ones(len(team_abbreviations), dtype=bool) if team_is_home_flags is None else team_is_home_flags
-    )
-    for abbreviation, is_home_flag in zip(team_abbreviations, team_is_home_flags):
-        if pd.isnull(abbreviation):
-            team_colors = null_team_colors
-        elif is_home_flag == True:  # noqa: E712
-            team_colors = lookup_table[abbreviation].home
-        else:
-            team_colors = lookup_table[abbreviation].away
+    if num_colors_needed > len(lookup_table):
+        raise IndexError(f"{num_colors_needed} colors requested; only {len(lookup_table)} colors available")
 
-        colors_list.append([team_colors[j] for j in range(num_colors_needed)])
+    colors_with_nulls = lookup_table.copy(deep=True)
+    colors_with_nulls[None] = null_team_colors
 
-    return list(zip(*colors_list))
+    # mapped_colors is a dataframe where the columns are the team_abbreviations and the
+    # rows are the colors
+    mapped_colors = colors_with_nulls[team_abbreviations]
+
+    # Filter to just the rows the user asked for
+    mapped_colors = mapped_colors.loc[: (num_colors_needed - 1), :]
+
+    # transpose, reset the index, and return:
+    return mapped_colors.T.reset_index(drop=True)
 
 
 def plot_tracks(
@@ -284,7 +276,7 @@ def plot_tracks(
     ball_identifier: Union[None, str, Callable] = None,
     home_away_identifier: Union[None, str, Callable] = None,
     team_abbreviations: Union[None, str, Callable] = None,
-    team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
+    team_color_mapping: pd.DataFrame = NFL_TEAM_COLORS,
     fig: Union[None, go.Figure, Field, str] = None,
 ):
     """Make a static plot showing player tracks over the course of the play.
@@ -352,9 +344,8 @@ def plot_tracks(
         },
         index=player_specific_data[player_column].values,
     )
-    styling_data["color"] = lookup_team_colors(styling_data["team"], team_color_mapping, 1, null_team_colors=["brown"])[
-        0
-    ]
+    line_colors = lookup_team_colors(styling_data["team"], team_color_mapping, 1, null_team_colors="brown")
+    styling_data["color"] = line_colors.values
     styling_dict = styling_data.to_dict("index")
 
     mode = "lines"
@@ -396,7 +387,7 @@ def plot_positions(
     home_away_identifier: Union[None, str, Callable] = None,
     team_abbreviations: Union[None, str, Callable] = None,
     uniform_number: Union[None, str, Callable] = None,
-    team_color_mapping: Dict[str, TeamColors] = NFL_TEAM_COLORS,
+    team_color_mapping: pd.DataFrame = NFL_TEAM_COLORS,
     fig: Union[None, go.Figure, Field, str] = None,
 ):
     """Make a static plot of a frame of data.
@@ -515,7 +506,7 @@ def plot_positions(
 def _generate_markers(
     is_home: np.array,
     team_abbreviations: Union[pd.Series, None],
-    abbreviation_lookup_table: Dict[str, TeamColors] = NFL_TEAM_COLORS,
+    abbreviation_lookup_table: pd.DataFrame = NFL_TEAM_COLORS,
 ):
     """generate marker colors based on what team a player is on as well as if they are home or away."""
     # Set defaults:
@@ -528,13 +519,9 @@ def _generate_markers(
     away_marker_textfont_color = np.tile(np.array(["white"], dtype="U40"), len(is_home))
 
     if team_abbreviations is not None:
-        color_tuples = lookup_team_colors(team_abbreviations, abbreviation_lookup_table, 3, team_is_home_flags=is_home)
-        marker_colors = pd.DataFrame(
-            {
-                colname: color
-                for colname, color in zip(["marker_color", "marker_edge_color", "marker_textfont_color"], color_tuples)
-            }
-        )
+        marker_colors = lookup_team_colors(team_abbreviations, abbreviation_lookup_table, 2).fillna("white")
+        marker_colors.columns = ["marker_color", "marker_edge_color"]
+        marker_colors["marker_textfont_color"] = "white"
     else:
         marker_colors = pd.DataFrame(
             {
@@ -554,7 +541,7 @@ def _get_style_information(
     data: pd.DataFrame,
     is_home: np.array,
     team_column: Union[None, np.array],
-    team_color_mapping: Dict[str, TeamColors],
+    team_color_mapping: pd.DataFrame,
 ):
     """Generate basic marker color, symbol, and size information."""
 
