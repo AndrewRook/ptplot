@@ -3,7 +3,7 @@ name: Run tests with tox
 on:
   pull_request:
   schedule:
-    - cron: '* * * * *'
+    - cron: '0 13 * * SAT'
 
 jobs:
   build-linux:
