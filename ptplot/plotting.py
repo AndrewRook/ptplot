@@ -251,7 +251,7 @@ def lookup_team_colors(
 
     """
     if num_colors_needed > len(lookup_table):
-        raise ValueError(f"{num_colors_needed} colors requested; only {len(lookup_table)} colors available")
+        raise IndexError(f"{num_colors_needed} colors requested; only {len(lookup_table)} colors available")
 
     colors_with_nulls = lookup_table.copy(deep=True)
     colors_with_nulls[np.nan] = null_team_colors
@@ -519,7 +519,7 @@ def _generate_markers(
     away_marker_textfont_color = np.tile(np.array(["white"], dtype="U40"), len(is_home))
 
     if team_abbreviations is not None:
-        marker_colors = lookup_team_colors(team_abbreviations, abbreviation_lookup_table, 2)
+        marker_colors = lookup_team_colors(team_abbreviations, abbreviation_lookup_table, 2).fillna("white")
         marker_colors.columns = ["marker_color", "marker_edge_color"]
         marker_colors["marker_textfont_color"] = "white"
     else:
