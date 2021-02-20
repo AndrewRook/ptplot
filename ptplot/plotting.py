@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-from typing import Callable, Dict, Sequence, Union
+from typing import Callable, Sequence, Union
 
 from ._assets.core import Field
 from ._assets.nfl_field import FIELD as NFL_FIELD, VERTICAL_FIELD as VERTICAL_NFL_FIELD
@@ -261,7 +261,7 @@ def lookup_team_colors(
     mapped_colors = colors_with_nulls[team_abbreviations]
 
     # Filter to just the rows the user asked for
-    mapped_colors = mapped_colors.loc[:(num_colors_needed-1), :]
+    mapped_colors = mapped_colors.loc[: (num_colors_needed - 1), :]
 
     # transpose, reset the index, and return:
     return mapped_colors.T.reset_index(drop=True)
@@ -344,9 +344,7 @@ def plot_tracks(
         },
         index=player_specific_data[player_column].values,
     )
-    line_colors = lookup_team_colors(
-        styling_data["team"], team_color_mapping, 1, null_team_colors="brown"
-    )
+    line_colors = lookup_team_colors(styling_data["team"], team_color_mapping, 1, null_team_colors="brown")
     styling_data["color"] = line_colors.values
     styling_dict = styling_data.to_dict("index")
 

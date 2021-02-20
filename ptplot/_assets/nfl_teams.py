@@ -34,13 +34,11 @@ _TEAM_COLORS = {
     "TB": ["#d50a0a", "#34302b", "#ff7900"],
     "TEN": ["#002244", "#4b92db", "#c60c30", "#a5acaf"],
     "WAS": ["#773141", "#ffb612"],
-
     "OAK": ["black", "#a5acaf"],
     "STL": ["#002244", "#b3995d"],
 }
 
 _max_number_colors = max(len(color_list) for _, color_list in _TEAM_COLORS.items())
-TEAM_COLORS = pd.DataFrame({
-    team: color_list + [None] * (_max_number_colors - len(color_list))
-    for team, color_list in _TEAM_COLORS.items()
-})
+TEAM_COLORS = pd.DataFrame(
+    {team: color_list + [None] * (_max_number_colors - len(color_list)) for team, color_list in _TEAM_COLORS.items()}
+)
