@@ -1,6 +1,9 @@
 name: Run tests with tox
 
-on: [pull_request]
+on:
+  pull_request
+  schedule:
+      - cron: '*/5 * * * *'
 
 jobs:
   build-linux:
