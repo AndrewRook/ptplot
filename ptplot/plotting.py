@@ -108,38 +108,97 @@ def animate_play(
             # print(unique_events_in_frame, pd.isnull(unique_events_in_frame[0]), unique_events_in_frame[0].lower())
             if pd.isnull(unique_events_in_frame[0]) is False and unique_events_in_frame[0].lower() != "none":
                 event_mapping.append((frame_id, unique_events_in_frame[0]))
-    fig.frames = frame_plots
+    fig.frames = _safe_add_frames(fig, frame_plots)
 
     # Add animation controls
     reset_name = fig.frames[0].name if events_of_interest is None else None
-    if events_of_interest is not None:
-        events = dict(
-            active=0,
-            direction="down",
-            pad={"b": 10, "t": 30},
-            xanchor="right",
-            yanchor="top",
-            x=1,
-            y=1.28,
-            buttons=[
-                dict(
-                    label=event_name,
-                    method="animate",
-                    args=[
-                        [frame_name],
-                        {
-                            "frame": {"duration": 10, "redraw": False},
-                            "mode": "immediate",
-                            "fromcurrent": "true",
-                            "transition": {"duration": 10},
-                        },
-                    ],
+    buttons = _make_control_buttons(100, reset_name)
+    events = None if events_of_interest is None else _make_event_dropdown(event_mapping)
+
+    print(len(fig.frames), len(slider_labels))
+    fig.update_layout(
+        updatemenus=[buttons] if events is None else [buttons, events],
+        sliders=_make_sliders([frame.name for frame in fig.frames], slider_labels),
+    )
+    return fig
+
+
+def animate_tracks(
+    data: pd.DataFrame,
+    x_column: str,
+    y_column: str,
+    player_column: str,
+    frame_column: str,
+    hover_text: Union[None, str, Callable] = None,
+    ball_identifier: Union[None, str, Callable] = None,
+    home_away_identifier: Union[None, str, Callable] = None,
+    team_abbreviations: Union[None, str, Callable] = None,
+    team_color_mapping: pd.DataFrame = NFL_TEAM_COLORS,
+    fig: Union[None, go.Figure, Field, str] = None,
+    slider_label_generator: Union[None, Callable] = None,
+    events_of_interest: Union[None, str, Callable] = None,
+):
+
+    first_frame = data[frame_column].min()
+
+    fig = plot_tracks(
+        data[data[frame_column] == first_frame],
+        x_column,
+        y_column,
+        player_column,
+        hover_text=hover_text,
+        ball_identifier=ball_identifier,
+        home_away_identifier=home_away_identifier,
+        team_abbreviations=team_abbreviations,
+        team_color_mapping=team_color_mapping,
+        fig=fig
+    )
+
+    # Make the animation frames
+    frame_plots = []
+    slider_labels = []
+    event_mapping = []
+    for frame_id in data[frame_column].unique():
+        frame_data = data[data[frame_column] <= frame_id]
+
+        player_groups = frame_data.groupby(player_column)
+        frame_tracks = []
+        for player_name, player_data in player_groups:
+            frame_tracks.append(
+                go.Scatter(
+                        x=player_data[x_column],
+                        y=player_data[y_column]
                 )
-                for frame_name, event_name in event_mapping
-            ],
+            )
+        frame_plots.append(
+            go.Frame(data=frame_tracks, name=str(frame_id))
         )
-    else:
-        events = None
+        latest_frame_data = frame_data[frame_data[frame_column] == frame_id]
+        slider_labels.append(
+            str(frame_id) if slider_label_generator is None else slider_label_generator(
+                latest_frame_data
+            )
+        )
+        # TODO: refactor this with utilities._parse_none_callable_string, if possible
+        if events_of_interest is not None:
+            if len(event_mapping) == 0:
+                event_mapping.append((frame_id, "Reset"))
+                continue
+            try:
+                event_in_frame = events_of_interest(latest_frame_data)
+            except TypeError:
+                event_in_frame = latest_frame_data[events_of_interest]
+            unique_events_in_frame = pd.unique(event_in_frame)
+            if len(unique_events_in_frame) != 1:
+                raise KeyError(f"Multiple events in frame {frame_id}. Got {unique_events_in_frame}")
+            # print(unique_events_in_frame, pd.isnull(unique_events_in_frame[0]), unique_events_in_frame[0].lower())
+            if pd.isnull(unique_events_in_frame[0]) is False and unique_events_in_frame[0].lower() != "none":
+                event_mapping.append((frame_id, unique_events_in_frame[0]))
+    fig.frames = _safe_add_frames(fig, frame_plots)
+
+    # Add animation controls
+    reset_name = fig.frames[0].name if events_of_interest is None else None
+    events = None if events_of_interest is None else _make_event_dropdown(event_mapping)
     buttons = _make_control_buttons(100, reset_name)
 
     fig.update_layout(
@@ -255,6 +314,7 @@ def lookup_team_colors(
 
     colors_with_nulls = lookup_table.copy(deep=True)
     colors_with_nulls[None] = null_team_colors
+    colors_with_nulls[np.nan] = null_team_colors
 
     # mapped_colors is a dataframe where the columns are the team_abbreviations and the
     # rows are the colors
@@ -553,6 +613,37 @@ def _get_style_information(
     return marker_color, marker_edge_color, marker_textfont_color, marker_width, marker_size, marker_symbol
 
 
+def _make_event_dropdown(event_mapping, **dropdown_kwargs):
+    dropdown_kwargs["active"] = dropdown_kwargs.get("active", 0)
+    dropdown_kwargs["direction"] = dropdown_kwargs.get("direction", "down")
+    dropdown_kwargs["pad"] = dropdown_kwargs.get("pad", {"b": 10, "t": 30})
+    dropdown_kwargs["xanchor"] = dropdown_kwargs.get("xanchor", "right")
+    dropdown_kwargs["yanchor"] = dropdown_kwargs.get("yanchor", "top")
+    dropdown_kwargs["x"] = dropdown_kwargs.get("x", 1)
+    dropdown_kwargs["y"] = dropdown_kwargs.get("y", 1.28)
+
+    events = dict(
+        buttons=[
+            dict(
+                label=event_name,
+                method="animate",
+                args=[
+                    [frame_name],
+                    {
+                        "frame": {"duration": 10, "redraw": False},
+                        "mode": "immediate",
+                        "fromcurrent": "true",
+                        "transition": {"duration": 10},
+                    }
+                ]
+            )
+            for frame_name, event_name in event_mapping
+        ],
+        **dropdown_kwargs
+    )
+    return events
+
+
 def _make_control_buttons(frame_durations, first_frame_name: Union[str, None] = None, **button_kwargs):
     """Make the play/pause and optional reset buttons for an animation."""
     buttons = [
@@ -565,7 +656,7 @@ def _make_control_buttons(frame_durations, first_frame_name: Union[str, None] = 
             ],
         ),
         dict(
-            label="&#9724;",  # pause symbol
+            label="&#10074;&#10074;",  # pause symbol
             method="animate",
             args=[
                 [None],
@@ -635,3 +726,30 @@ def _make_sliders(frame_names: Sequence, slider_labels: Sequence, **slider_kwarg
     sliders = [{**slider_kwargs, "steps": slider_steps}]
 
     return sliders
+
+
+def _safe_add_frames(fig: go.Figure, frames: Sequence[go.Frame]):
+    """Don't overwrite existing frames, but check and make sure
+    that any existing frames have the same length and same ids
+    """
+    if len(fig.frames) == 0:
+        combined_frames = frames
+    else:
+        if len(fig.frames) != len(frames):
+            raise IndexError(
+                f"Frame lengths must match! ({len(fig.frames)}, {len(frames)})"
+            )
+        combined_frames = []
+        for existing_frame, new_frame in zip(fig.frames, frames):
+            if existing_frame.name != new_frame.name:
+                raise ValueError(
+                    f"Frames have different names, which may"
+                    f"indicate that they are out of order:"
+                    f"({existing_frame.name}, {new_frame.name})"
+                )
+            combined_frame = go.Frame(
+                data=(existing_frame.data + new_frame.data),
+                name=existing_frame.name
+            )
+            combined_frames.append(combined_frame)
+    return combined_frames
