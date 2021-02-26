@@ -20,3 +20,10 @@ jobs:
         - name: Check Version
           run: |
             python -c "import ptplot; print(ptplot.__version__)"
+        - name: Build and publish
+          env:
+            TWINE_USERNAME: __token__
+            TWINE_PASSWORD: ${{ secrets.PYPI_TEST_TOKEN }}
+          run: |
+            python setup.py sdist bdist_wheel
+            twine upload --repository testpypi dist/*
