@@ -18,8 +18,7 @@ extras = {
 requirements, extra_requirements = parse_envs.parse_conda_envs(
     "environment_minimum_requirements.yml",
     "environment.yml",
-    optional_packages=extras,
-    package_modifiers={'dask': 'dataframe'}
+    optional_packages=extras
 )
 
 setup(
