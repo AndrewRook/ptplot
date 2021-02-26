@@ -168,8 +168,10 @@ def animate_tracks(
         for player_name, player_data in player_groups:
             frame_tracks.append(
                 go.Scatter(
-                        x=player_data[x_column],
-                        y=player_data[y_column]
+                    x=player_data[x_column],
+                    y=player_data[y_column],
+                    # Need to re-parse the text because the number of points changes :(
+                    text=_parse_none_callable_string(hover_text, player_data, "")
                 )
             )
         frame_plots.append(
@@ -193,7 +195,6 @@ def animate_tracks(
             unique_events_in_frame = pd.unique(event_in_frame)
             if len(unique_events_in_frame) != 1:
                 raise KeyError(f"Multiple events in frame {frame_id}. Got {unique_events_in_frame}")
-            # print(unique_events_in_frame, pd.isnull(unique_events_in_frame[0]), unique_events_in_frame[0].lower())
             if pd.isnull(unique_events_in_frame[0]) is False and unique_events_in_frame[0].lower() != "none":
                 event_mapping.append((frame_id, unique_events_in_frame[0]))
     fig.frames = _safe_add_frames(fig, frame_plots)
@@ -651,7 +652,7 @@ def _make_event_dropdown(event_mapping, **dropdown_kwargs):
     return events
 
 
-def _make_control_buttons(frame_durations, first_frame_name: Union[str, None] = None, **button_kwargs):
+def _make_control_buttons(transition_duration, first_frame_name: Union[str, None] = None, **button_kwargs):
     """Make the play/pause and optional reset buttons for an animation."""
     buttons = [
         dict(
@@ -659,7 +660,12 @@ def _make_control_buttons(frame_durations, first_frame_name: Union[str, None] = 
             method="animate",
             args=[
                 None,
-                {"frame": {"duration": frame_durations, "redraw": False}, "mode": "immediate", "fromcurrent": True},
+                {
+                    "frame": {"duration": transition_duration, "redraw": False},
+                    "mode": "immediate",
+                    "transition": {"duration": transition_duration, "easing": "linear"},
+                    "fromcurrent": True
+                },
             ],
         ),
         dict(
@@ -682,7 +688,7 @@ def _make_control_buttons(frame_durations, first_frame_name: Union[str, None] = 
                 method="animate",
                 args=[
                     [first_frame_name],
-                    {"frame": {"duration": 10, "redraw": False}, "mode": "immediate", "transition": {"duration": 10}},
+                    {"frame": {"duration": 0, "redraw": False}, "mode": "immediate", "transition": {"duration": 10}},
                 ],
             )
         ]
