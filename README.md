@@ -41,10 +41,10 @@ import pandas as pd
 from ptplot import plotting
 data = pd.read_csv([YOUR PLAYER TRACKING DATA])
 fig = plotting.animate_positions(
-    data, "x", "y", "frame",
+    data, "x", "y", "frame"
 )
 fig.show()
 ```
 
-For additional documentation an examples, check out the
+For additional documentation and examples, check out the
 notebooks in the `notebooks/` directory. 
