@@ -153,7 +153,7 @@ def animate_tracks(
         home_away_identifier=home_away_identifier,
         team_abbreviations=team_abbreviations,
         team_color_mapping=team_color_mapping,
-        fig=fig
+        fig=fig,
     )
 
     # Make the animation frames
@@ -171,17 +171,13 @@ def animate_tracks(
                     x=player_data[x_column],
                     y=player_data[y_column],
                     # Need to re-parse the text because the number of points changes :(
-                    text=_parse_none_callable_string(hover_text, player_data, "")
+                    text=_parse_none_callable_string(hover_text, player_data, ""),
                 )
             )
-        frame_plots.append(
-            go.Frame(data=frame_tracks, name=str(frame_id))
-        )
+        frame_plots.append(go.Frame(data=frame_tracks, name=str(frame_id)))
         latest_frame_data = frame_data[frame_data[frame_column] == frame_id]
         slider_labels.append(
-            str(frame_id) if slider_label_generator is None else slider_label_generator(
-                latest_frame_data
-            )
+            str(frame_id) if slider_label_generator is None else slider_label_generator(latest_frame_data)
         )
         # TODO: refactor this with utilities._parse_none_callable_string, if possible
         if events_of_interest is not None:
@@ -642,12 +638,12 @@ def _make_event_dropdown(event_mapping, **dropdown_kwargs):
                         "mode": "immediate",
                         "fromcurrent": "true",
                         "transition": {"duration": 10},
-                    }
-                ]
+                    },
+                ],
             )
             for frame_name, event_name in event_mapping
         ],
-        **dropdown_kwargs
+        **dropdown_kwargs,
     )
     return events
 
@@ -664,7 +660,7 @@ def _make_control_buttons(transition_duration, first_frame_name: Union[str, None
                     "frame": {"duration": transition_duration, "redraw": False},
                     "mode": "immediate",
                     "transition": {"duration": transition_duration, "easing": "linear"},
-                    "fromcurrent": True
+                    "fromcurrent": True,
                 },
             ],
         ),
@@ -749,9 +745,7 @@ def _safe_add_frames(fig: go.Figure, frames: Sequence[go.Frame]):
         combined_frames = frames
     else:
         if len(fig.frames) != len(frames):
-            raise IndexError(
-                f"Frame lengths must match! ({len(fig.frames)}, {len(frames)})"
-            )
+            raise IndexError(f"Frame lengths must match! ({len(fig.frames)}, {len(frames)})")
         combined_frames = []
         for existing_frame, new_frame in zip(fig.frames, frames):
             if existing_frame.name != new_frame.name:
@@ -760,9 +754,6 @@ def _safe_add_frames(fig: go.Figure, frames: Sequence[go.Frame]):
                     f"indicate that they are out of order:"
                     f"({existing_frame.name}, {new_frame.name})"
                 )
-            combined_frame = go.Frame(
-                data=(existing_frame.data + new_frame.data),
-                name=existing_frame.name
-            )
+            combined_frame = go.Frame(data=(existing_frame.data + new_frame.data), name=existing_frame.name)
             combined_frames.append(combined_frame)
     return combined_frames
