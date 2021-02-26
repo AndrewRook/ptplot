@@ -1,32 +1,8 @@
-import dask.dataframe as dd
 import functools
 import numpy as np
 import pandas as pd
-import warnings
 
 from typing import Any, Callable, Sequence, Union
-
-
-class DaskCompatibilityWarning(UserWarning):  # pragma: no cover
-    """
-    A warning for cases where some noncritical functionality
-    is skipped because it does not work in dask. For example,
-    skipping error checking that works for pandas but would
-    require running ``.compute()`` for dask, instead this will
-    raise a warning explaining that the user needs to be
-    responsible for that checking themselves.
-    """
-
-    pass
-
-
-def warn_if_dask(input_dataframe):  # pragma: no cover
-    """raise a warning if error checking is disabled due to the usage of dask."""
-    if type(input_dataframe) == dd.DataFrame:
-        warnings.warn(
-            "Error checking suppressed with dask dataframes to prevent " "unnecessary compute calls",
-            DaskCompatibilityWarning,
-        )
 
 
 def get_path_midpoint(path):  # pragma: no cover
