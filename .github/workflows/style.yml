@@ -3,7 +3,7 @@ name: Run style checks
 on: [pull_request]
 
 jobs:
-  build-linux:
+  style_checks:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
