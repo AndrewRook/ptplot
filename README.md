@@ -47,4 +47,12 @@ fig.show()
 ```
 
 For additional documentation and examples, check out the
-notebooks in the `notebooks/` directory. 
+notebooks in the `notebooks/` directory, which can be viewed
+online with all of the plots correctly rendered via nbviewer:
+1. [Basic Plots](https://nbviewer.jupyter.org/github/AndrewRook/ptplot/blob/main/notebooks/1-Basic_Plots.ipynb)
+2. [Animations](https://nbviewer.jupyter.org/github/AndrewRook/ptplot/blob/main/notebooks/2-Animations.ipynb)
+3. [Tips and Tricks](https://nbviewer.jupyter.org/github/AndrewRook/ptplot/blob/main/notebooks/3-Tips_and_Tricks.ipynb)
+
+Additionally, functions within `ptplot` have docstrings with
+more usage details. Those can be accessed either by reading the
+source code or running `help([FUNCTION])` inside of Python. 
