@@ -56,3 +56,7 @@ online with all of the plots correctly rendered via nbviewer:
 Additionally, functions within `ptplot` have docstrings with
 more usage details. Those can be accessed either by reading the
 source code or running `help([FUNCTION])` inside of Python. 
+
+## Development Docs
+
+See [here](development.md)
