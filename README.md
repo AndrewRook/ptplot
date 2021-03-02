@@ -4,6 +4,8 @@ interactive visualizations — including animations! These visualizations can be
 data exploration/analysis work, or to embed in webpages to share with
 the world. 
 
+![example animation](ptplot.gif)
+
 ## Installation
 
 `ptplot` can be installed via pip:
