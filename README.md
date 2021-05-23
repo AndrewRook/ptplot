@@ -1,3 +1,26 @@
+## Development roadmap
+* Field generation
+  * Figure out how to allow for different sports fields
+  * Figure out where to store information about field sizes in data units (also aspect ratios)
+  * Figure out how to add to base figure
+* Team information
+  * Figure out how to allow for different leagues
+  * Allow user to override
+  * How to store team info for use in plotting
+  * Also: the ball
+     * custom glyphs?
+* Static plots
+  * Plot of positions at a certain frame/timestamp
+  * Plot of tracks up to a certain frame/timestamp (default: all)
+  * Legend by team, clickable to highlight one team or the ball
+  * Support for having overlaid plots
+  * Support for additional plot types
+  * Support for hoverlabels (including handling case with multiple plots)
+  * Support for faceting?
+  * Support for splitting color/size/etc by column or expression (maybe depends on the plot?)
+* Animations
+  * Automatically convert static plot to animation by specifying frame/timestamp column  
+
 # ptplot
 `ptplot` makes it easy to turn player-tracking data into beautiful,
 interactive visualizations — including animations! These visualizations can be used to guide
