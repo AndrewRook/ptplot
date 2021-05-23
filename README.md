@@ -1,4 +1,12 @@
 ## Development roadmap
+* Interface
+  * Look at python ggplot2 implementation for inspiration
+  * Use layered grammar of graphics
+* Data
+  * Store data in plot object for usage by other functions
+     * Store multiple datasets? 
+     * Store as dataframe versus bokeh datatype?
+     * Store additional info, like index markers for frames or special columns?
 * Field generation
   * Figure out how to allow for different sports fields
   * Figure out where to store information about field sizes in data units (also aspect ratios)
@@ -19,7 +27,8 @@
   * Support for faceting?
   * Support for splitting color/size/etc by column or expression (maybe depends on the plot?)
 * Animations
-  * Automatically convert static plot to animation by specifying frame/timestamp column  
+  * Automatically convert static plot to animation by specifying frame/timestamp column
+  * Sort data by frame/timestamp column, set indices for faster plot rendering as needed  
 
 # ptplot
 `ptplot` makes it easy to turn player-tracking data into beautiful,
