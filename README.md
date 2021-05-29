@@ -30,6 +30,16 @@
   * Automatically convert static plot to animation by specifying frame/timestamp column
   * Sort data by frame/timestamp column, set indices for faster plot rendering as needed  
 
+#### How to filter animations:
+1. Add an animation trigger that sets the column containing the frame numbers and/or timestamps.
+2. Set a Bokeh Filter on the plots for the default frame/timestamp.
+3. Set up [animation stuff](https://discourse.bokeh.org/t/possible-to-use-customjs-callback-from-a-button-to-animate-a-slider/3985/3)
+4. Store index information keyed by frame number, store also current frame number somehow.
+5. For incremental plots, when moving forward in frames simply append the new frames
+   onto the existing filter. When moving backward figure out how many indices to remove
+   and then reset the filter length. 
+6. For non-incremental plots, just reset the whole filter. 
+
 # ptplot
 `ptplot` makes it easy to turn player-tracking data into beautiful,
 interactive visualizations — including animations! These visualizations can be used to guide
