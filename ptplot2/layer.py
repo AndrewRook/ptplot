@@ -10,5 +10,5 @@ if TYPE_CHECKING:
 class Layer(ABC):
 
     @abstractmethod
-    def __radd__(self, ptplot: PTPlot):
+    def __radd__(self, ptplot: PTPlot) -> PTPlot: # Not sure if needs to return
         pass
