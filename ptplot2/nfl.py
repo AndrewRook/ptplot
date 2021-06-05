@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import warnings
 
 from .layer import Layer
@@ -20,7 +21,7 @@ class Field(Layer):
             relative_yardlines: bool = False,
             sideline_buffer: float = 3,
             pixels_per_yard: int = 20):
-        if vertical_orientation or relative_yardlines:
+        if vertical_orientation:
             raise NotImplementedError("Don't have that yet")
 
         self.vertical_orientation = vertical_orientation
