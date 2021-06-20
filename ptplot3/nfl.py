@@ -6,12 +6,83 @@ import numpy as np
 import pandas as pd
 import warnings
 
+from functools import partial
+
 from .layer import Layer
 from typing import TYPE_CHECKING, Iterable, Optional
 
 if TYPE_CHECKING:
     from bokeh.plotting import figure
     from .ptplot import PTPlot
+
+
+NFL_TEAMS = {
+    "ARI": ["#97233f", "white"],
+    "ATL": ["#a71930", "#a5acaf"],
+    "BAL": ["#241773", "#9e7c0c"],
+    "BUF": ["#00338d", "#c60c30"],
+    "CAR": ["#0085ca", "#bfc0bf"],
+    "CHI": ["#0b162a", "#c83803"],
+    "CIN": ["#fb4f14", "white"],
+    "CLE": ["#311d00", "#ff3c00"],
+    "DAL": ["#002244", "#869397"],
+    "DEN": ["#fb4f14", "#002244"],
+    "DET": ["#0076b6", "#b0b7bc"],
+    "GB": ["#203731", "#ffb612"],
+    "HOU": ["#03202f", "#a71930"],
+    "IND": ["#002c5f", "#a5acaf"],
+    "JAX": ["#006778", "#9f792c"],
+    "KC": ["#e31837", "#ffb612"],
+    "LAC": ["#0073cf", "#ffb612"],
+    "LAR": ["#002244", "#b3995d"],
+    "LV": ["black", "#a5acaf"],
+    "MIA": ["#008e97", "#f26a24"],
+    "MIN": ["#4f2683", "#ffc62f"],
+    "NE": ["#002244", "#c60c30"],
+    "NO": ["black", "#d3bc8d"],
+    "NYG": ["#0b2265", "#a71930"],
+    "NYJ": ["#003f2d", "white"],
+    "PHI": ["#004c54", "#a5acaf"],
+    "PIT": ["black", "#ffb612"],
+    "SF": ["#aa0000", "#b3995d"],
+    "SEA": ["#002244", "#69be28"],
+    "TB": ["#d50a0a", "#34302b"],
+    "TEN": ["#002244", "#4b92db"],
+    "WAS": ["#773141", "#ffb612"],
+    "OAK": ["black", "#a5acaf"],
+    "STL": ["#002244", "#b3995d"]
+}
+
+class Aesthetics(Layer):
+    def __init__(self, team_ball_mapping=None, home_away_mapping=None, ball_identifier=None):
+        self.team_ball_mapping = team_ball_mapping
+        self.home_away_mapping = home_away_mapping
+        self.ball_identifier = ball_identifier
+
+    def get_mappings(self):
+        mappings = []
+        if self.team_ball_mapping is not None:
+            mappings.append(self.team_ball_mapping)
+        if self.home_away_mapping is not None:
+            mappings.append(self.home_away_mapping)
+        return mappings
+
+    def map_aesthetics(self, data: pd.DataFrame):
+        if self.team_ball_mapping is not None:
+            team_ball_groups = data.groupby(self.team_ball_mapping)
+            for team_ball_name, team_ball_data in team_ball_groups:
+                if self.ball_identifier is not None and team_ball_name == self.ball_identifier:
+                    yield ["brown", "brown"], self._ball_marker
+                else:
+                    team_color_list = NFL_TEAMS[team_ball_name]
+                    if
+
+    @staticmethod
+    def _ball_marker(figure: figure):
+        return partial(
+            figure.ellipse, width=1, height=0.5, angle=0.0,
+            fill_color="brown", fill_alpha=0.75, line_color="brown"
+        )
 
 
 class Field(Layer):

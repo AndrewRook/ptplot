@@ -11,13 +11,11 @@ if TYPE_CHECKING:
 
 class Layer(ABC):
 
-    @abstractmethod
     def get_mappings(self) -> Iterable[str]:
-        pass
+        return []
 
-    @abstractmethod
     def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure):
         pass
 
-    def __radd__(self, ptplot: PTPlot) -> PTPlot:
+    def __radd__(self, ptplot: PTPlot):
         pass
