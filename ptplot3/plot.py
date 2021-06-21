@@ -35,7 +35,7 @@ class Positions(Layer):
             data = data[data[self.frame_filter]]
         source = ColumnDataSource(data)
         if metadata.marker is not None:
-            metadata.marker(bokeh_figure)(x=self.x, y=self.y)
+            metadata.marker(bokeh_figure)(x=self.x, y=self.y, source=source)
         else:
             fill_color, line_color = (
                 metadata.color_list if metadata.is_home is True

@@ -104,8 +104,8 @@ class Aesthetics(Layer):
     @staticmethod
     def _ball_marker(figure: figure):
         return partial(
-            figure.ellipse, width=1, height=0.5, angle=0.0,
-            fill_color="brown", fill_alpha=0.75, line_color="brown"
+            figure.ellipse, width=2, height=1, angle=0.0,
+            fill_color="brown", fill_alpha=0.9, line_color="brown"
         )
 
 
@@ -116,7 +116,7 @@ class Metadata:
     is_home: bool = True
     color_list: Iterable[str] = ("black", "gray")
     marker: Optional[Callable] = None
-    
+
 
 class Field(Layer):
     def __init__(
