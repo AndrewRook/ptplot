@@ -9,6 +9,7 @@ from .layer import Layer
 if TYPE_CHECKING:
     from bokeh.plotting import figure
     from .ptplot import PTPlot
+    from .nfl import Metadata
     import pandas as pd
 
 
@@ -26,21 +27,24 @@ class Positions(Layer):
             mappings += [self.frame_filter]
         return mappings
 
-    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure):
+    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: Metadata):
         #full_source = ColumnDataSource(data)
 
-        # If you have multiple frames but only want to show one:
+        # If you have multiple frames but only want to show one (even in an animation):
         if self.frame_filter is not None:
             data = data[data[self.frame_filter]]
-        # If there is an animation set
-        elif hasattr(ptplot, "animation_column"):
-            first_frame = data[ptplot.animation_column].min()
-            data = data[data[ptplot.animation_column] == first_frame]
         source = ColumnDataSource(data)
-        bokeh_figure.circle(
-            x=self.x, y=self.y, source=source,
-            fill_color="red", line_color="black", radius=1, line_width=2
-        )
+        if metadata.marker is not None:
+            metadata.marker(bokeh_figure)(x=self.x, y=self.y)
+        else:
+            fill_color, line_color = (
+                metadata.color_list if metadata.is_home is True
+                else ["white", metadata.color_list[0]]
+            )
+            bokeh_figure.circle(
+                x=self.x, y=self.y, source=source,
+                fill_color=fill_color, line_color=line_color, radius=1, line_width=2
+            )
 
 
 FIND_CURRENT_FRAME_CALLBACK = """

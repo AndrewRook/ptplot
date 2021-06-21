@@ -9,7 +9,7 @@ import warnings
 from functools import partial
 
 from .layer import Layer
-from typing import TYPE_CHECKING, Iterable, Optional
+from typing import TYPE_CHECKING, Callable, Iterable, Optional
 
 if TYPE_CHECKING:
     from bokeh.plotting import figure
@@ -17,47 +17,50 @@ if TYPE_CHECKING:
 
 
 NFL_TEAMS = {
-    "ARI": ["#97233f", "white"],
-    "ATL": ["#a71930", "#a5acaf"],
-    "BAL": ["#241773", "#9e7c0c"],
-    "BUF": ["#00338d", "#c60c30"],
-    "CAR": ["#0085ca", "#bfc0bf"],
-    "CHI": ["#0b162a", "#c83803"],
-    "CIN": ["#fb4f14", "white"],
-    "CLE": ["#311d00", "#ff3c00"],
-    "DAL": ["#002244", "#869397"],
-    "DEN": ["#fb4f14", "#002244"],
-    "DET": ["#0076b6", "#b0b7bc"],
-    "GB": ["#203731", "#ffb612"],
-    "HOU": ["#03202f", "#a71930"],
-    "IND": ["#002c5f", "#a5acaf"],
-    "JAX": ["#006778", "#9f792c"],
-    "KC": ["#e31837", "#ffb612"],
-    "LAC": ["#0073cf", "#ffb612"],
-    "LAR": ["#002244", "#b3995d"],
-    "LV": ["black", "#a5acaf"],
-    "MIA": ["#008e97", "#f26a24"],
-    "MIN": ["#4f2683", "#ffc62f"],
-    "NE": ["#002244", "#c60c30"],
-    "NO": ["black", "#d3bc8d"],
-    "NYG": ["#0b2265", "#a71930"],
-    "NYJ": ["#003f2d", "white"],
-    "PHI": ["#004c54", "#a5acaf"],
-    "PIT": ["black", "#ffb612"],
-    "SF": ["#aa0000", "#b3995d"],
-    "SEA": ["#002244", "#69be28"],
-    "TB": ["#d50a0a", "#34302b"],
-    "TEN": ["#002244", "#4b92db"],
-    "WAS": ["#773141", "#ffb612"],
-    "OAK": ["black", "#a5acaf"],
-    "STL": ["#002244", "#b3995d"]
+    "ARI": ("#97233f", "white"),
+    "ATL": ("#a71930", "#a5acaf"),
+    "BAL": ("#241773", "#9e7c0c"),
+    "BUF": ("#00338d", "#c60c30"),
+    "CAR": ("#0085ca", "#bfc0bf"),
+    "CHI": ("#0b162a", "#c83803"),
+    "CIN": ("#fb4f14", "white"),
+    "CLE": ("#311d00", "#ff3c00"),
+    "DAL": ("#002244", "#869397"),
+    "DEN": ("#fb4f14", "#002244"),
+    "DET": ("#0076b6", "#b0b7bc"),
+    "GB": ("#203731", "#ffb612"),
+    "HOU": ("#03202f", "#a71930"),
+    "IND": ("#002c5f", "#a5acaf"),
+    "JAX": ("#006778", "#9f792c"),
+    "KC": ("#e31837", "#ffb612"),
+    "LAC": ("#0073cf", "#ffb612"),
+    "LAR": ("#002244", "#b3995d"),
+    "LV": ("black", "#a5acaf"),
+    "MIA": ("#008e97", "#f26a24"),
+    "MIN": ("#4f2683", "#ffc62f"),
+    "NE": ("#002244", "#c60c30"),
+    "NO": ("black", "#d3bc8d"),
+    "NYG": ("#0b2265", "#a71930"),
+    "NYJ": ("#003f2d", "white"),
+    "PHI": ("#004c54", "#a5acaf"),
+    "PIT": ("black", "#ffb612"),
+    "SF": ("#aa0000", "#b3995d"),
+    "SEA": ("#002244", "#69be28"),
+    "TB": ("#d50a0a", "#34302b"),
+    "TEN": ("#002244", "#4b92db"),
+    "WAS": ("#773141", "#ffb612"),
+    "OAK": ("black", "#a5acaf"),
+    "STL": ("#002244", "#b3995d")
 }
+
 
 class Aesthetics(Layer):
     def __init__(self, team_ball_mapping=None, home_away_mapping=None, ball_identifier=None):
         self.team_ball_mapping = team_ball_mapping
         self.home_away_mapping = home_away_mapping
         self.ball_identifier = ball_identifier
+        self.ball_colors = ["brown", "brown"]
+        self.team_color_mapping = NFL_TEAMS
 
     def get_mappings(self):
         mappings = []
@@ -72,10 +75,31 @@ class Aesthetics(Layer):
             team_ball_groups = data.groupby(self.team_ball_mapping)
             for team_ball_name, team_ball_data in team_ball_groups:
                 if self.ball_identifier is not None and team_ball_name == self.ball_identifier:
-                    yield ["brown", "brown"], self._ball_marker
+                    yield team_ball_data, Metadata(
+                        label=team_ball_name, is_home=True,
+                        color_list=self.ball_colors, marker=self._ball_marker
+                    )
                 else:
-                    team_color_list = NFL_TEAMS[team_ball_name]
-                    if
+                    team_color_list = self.team_color_mapping[team_ball_name]
+                    if self.home_away_mapping is not None:
+                        home_away_groups = team_ball_data.groupby(self.home_away_mapping)
+                        for is_home, home_away_data in home_away_groups:
+                            yield home_away_data, Metadata(
+                                label=team_ball_name, is_home=is_home, color_list=team_color_list
+                            )
+                    else:
+                        yield team_ball_data, Metadata(
+                            label=team_ball_name, is_home=True, color_list=team_color_list
+                        )
+        else:
+            if self.home_away_mapping is not None:
+                home_away_groups = data.groupby(self.home_away_mapping)
+                for is_home, home_away_data in home_away_groups:
+                    yield home_away_data, Metadata(
+                        is_home=is_home
+                    )
+            else:
+                yield data, Metadata()
 
     @staticmethod
     def _ball_marker(figure: figure):
@@ -84,6 +108,15 @@ class Aesthetics(Layer):
             fill_color="brown", fill_alpha=0.75, line_color="brown"
         )
 
+
+from dataclasses import dataclass, field
+@dataclass
+class Metadata:
+    label: Optional[str] = None
+    is_home: bool = True
+    color_list: Iterable[str] = ("black", "gray")
+    marker: Optional[Callable] = None
+    
 
 class Field(Layer):
     def __init__(
@@ -108,7 +141,7 @@ class Field(Layer):
     def get_mappings(self):
         return []
 
-    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure):
+    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: Metadata):
 
         field_width_yards = 53.3
         y_min = 0 - self.sideline_buffer
@@ -188,7 +221,7 @@ class Field(Layer):
         field_view[:, :, 2] = field[::-1, :, 2]
         field_view[:, :, 3] = 200
 
-        bokeh_figure.image_rgba(image=[img], x=self.min_yardline, y=y_min, dw=x_yards, dh=y_yards)
+        bokeh_figure.image_rgba(image=[img], x=self.min_yardline, y=y_min, dw=x_yards, dh=y_yards, level="underlay")
 
         # Have to manually set the width here because I can't figure out how to make bokeh scale
         # to it automatically :(
