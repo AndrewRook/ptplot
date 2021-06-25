@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import math
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -104,15 +106,26 @@ class Aesthetics(Layer):
     @staticmethod
     def _ball_marker(figure: figure):
         return partial(
-            figure.ellipse, width=2, height=1, angle=0.0,
-            fill_color="brown", fill_alpha=0.9, line_color="brown"
+            figure.circle, radius=1, line_width=2, fill_alpha=0.9, fill_color="brown", line_color="brown"
         )
+        # return partial(
+        #     figure.ellipse, width=2, height=1, angle=0.0,
+        #     fill_color="brown", fill_alpha=0.9, line_color="brown"
+        # )
+
+
+class Animation(Layer):
+    def __init__(self, frame_mapping):
+        self.frame_mapping = frame_mapping
+
+    def get_mappings(self):
+        return [self.frame_mapping]
 
 
 from dataclasses import dataclass, field
 @dataclass
 class Metadata:
-    label: Optional[str] = None
+    label: Optional[str] = ""
     is_home: bool = True
     color_list: Iterable[str] = ("black", "gray")
     marker: Optional[Callable] = None
@@ -221,7 +234,7 @@ class Field(Layer):
         field_view[:, :, 2] = field[::-1, :, 2]
         field_view[:, :, 3] = 200
 
-        bokeh_figure.image_rgba(image=[img], x=self.min_yardline, y=y_min, dw=x_yards, dh=y_yards, level="underlay")
+        bokeh_figure.image_rgba(image=[img], x=self.min_yardline, y=y_min, dw=x_yards, dh=y_yards, level="image")
 
         # Have to manually set the width here because I can't figure out how to make bokeh scale
         # to it automatically :(

@@ -5,9 +5,11 @@ import pandas as pd
 import patsy
 
 from bokeh.plotting import figure
+from bokeh.layouts import layout
+from bokeh.models import Slider
 from typing import TYPE_CHECKING, Optional
 
-from .nfl import Metadata
+from .nfl import Metadata, Animation
 
 if TYPE_CHECKING:
     from .layer import Layer
@@ -29,6 +31,19 @@ class PTPlot:
     def aesthetics(self):
         mapper = self._get_attribute_from_layers("map_aesthetics")
         return mapper if mapper is not None else lambda data: [(data, Metadata())]
+
+    @property
+    def animation_layer(self):
+        layer_to_return = None
+        for layer in self.layers:
+            if isinstance(layer, Animation):
+                if layer_to_return is None:
+                    layer_to_return = layer
+                else:
+                    raise ValueError(
+                        f"Only one Animation layer can be used for a given visualization"
+                    )
+        return layer_to_return
 
     def _get_attribute_from_layers(self, attribute_name):
         attribute = None
@@ -60,7 +75,14 @@ class PTPlot:
             mapping: _apply_mapping(self.data, mapping)
             for mapping in mappings
         })
+
+        # If animation, sort the data by the frame column
+        if self.animation_layer is not None:
+            mapping_data = mapping_data.sort_values(self.animation_layer.frame_mapping)
+
         facets = self.faceting(mapping_data)
+        figures = []
+        animations = []
         for (facet_name, facet_data) in facets:
             figure_object = figure(sizing_mode="scale_both", height=self.pixel_height)
             figure_object.x_range.range_padding = figure_object.y_range.range_padding = 0
@@ -69,36 +91,37 @@ class PTPlot:
             figure_object.ygrid.visible = False
             for data_subset, metadata in self.aesthetics(facet_data):
                 for layer in self.layers:
-                    layer.draw(self, data_subset, figure_object, metadata)
+                    animation = layer.draw(self, data_subset, figure_object, metadata)
+                    if animation is not None:
+                        animations.append(animation)
+            figure_object.legend.click_policy = "mute"
+            figures.append(figure_object)
 
-
-        # If animation, sort the data by the frame column
-        # Add home/away/ball colors to mapping dataframe? Broadly, how to handle situations where
-        # you're plotting lots of players instead of teams?
-        # If facets defined, split into facets, then for each facet:
-        #     create figure
-        #     if ball defined, split into ball/non-ball
-        #     if teams defined, split non-ball into teams
-        #     for each ball/team:
-        #         call draw method for each layer, which:
-        #         1. draws whatever it needs to on the provided figure
-        #         2. returns a list of the sources and the callback strings
+        widgets = []
+        if self.animation_layer is not None:
+            min_frame = mapping_data[self.animation_layer.frame_mapping].min()
+            max_frame = mapping_data[self.animation_layer.frame_mapping].max()
+            slider = Slider(
+                start=min_frame, end=max_frame,
+                value=min_frame, step=1,
+                title="Frame"
+            )
+            widgets.append(slider)
+            for animation in animations:
+                callback = animation(self.animation_layer.frame_mapping, min_frame)
+                slider.js_on_change("value", callback)
         # If animation is set, create the animation widgets, then for each source + callback string pair:
         #     1. Set the filter to the first frame
         #     2. Connect the callbacks to the animation widgets
 
         # How to set up a facet for later use? Set instance attributes on PTPlot for each
         # of num_per_row, num_per_col, and facet variable? Make a facet object with that info?
-
-        # How to set up animation? Set instance attributes for all args or an animation object?
-        # Maybe make a separate method call for animation?
-        # figure_object = figure(sizing_mode="scale_both", height=self.pixel_height)
-        # figure_object.x_range.range_padding = figure_object.y_range.range_padding = 0
-        # figure_object.x_range.bounds = figure_object.y_range.bounds = "auto"
-        # for layer in self.layers:
-        #     layer.draw(self, mapping_data, figure_object)
-
-        return figure_object
+        rows = [figures] if len(widgets) == 0 else [figures, widgets]
+        return layout(rows)
+        # if len(figures) == 1:
+        #     return figures[0]
+        # else:
+        #     raise NotImplementedError
 
 
 def _apply_mapping(
