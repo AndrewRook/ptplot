@@ -91,13 +91,14 @@ class PTPlot:
             figure_object.ygrid.visible = False
             for data_subset, metadata in self.aesthetics(facet_data):
                 for layer in self.layers:
-                    animation = layer.draw(self, data_subset, figure_object, metadata)
-                    if animation is not None:
-                        animations.append(animation)
+                    layer_animation = layer.draw(self, data_subset, figure_object, metadata)
+                    if layer_animation is not None:
+                        animations += layer_animation
             figure_object.legend.click_policy = "mute"
             figures.append(figure_object)
 
         widgets = []
+        # TODO: could this be handled by using bokeh's tagging functionality?
         if self.animation_layer is not None:
             min_frame = mapping_data[self.animation_layer.frame_mapping].min()
             max_frame = mapping_data[self.animation_layer.frame_mapping].max()
@@ -110,12 +111,6 @@ class PTPlot:
             for animation in animations:
                 callback = animation(self.animation_layer.frame_mapping, min_frame)
                 slider.js_on_change("value", callback)
-        # If animation is set, create the animation widgets, then for each source + callback string pair:
-        #     1. Set the filter to the first frame
-        #     2. Connect the callbacks to the animation widgets
-
-        # How to set up a facet for later use? Set instance attributes on PTPlot for each
-        # of num_per_row, num_per_col, and facet variable? Make a facet object with that info?
         rows = [figures] if len(widgets) == 0 else [figures, widgets]
         return layout(rows)
         # if len(figures) == 1:
