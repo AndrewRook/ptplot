@@ -99,6 +99,7 @@ class PTPlot:
 
         widgets = []
         # TODO: could this be handled by using bokeh's tagging functionality?
+        # Probably could, by storing the closure with the plot
         if self.animation_layer is not None:
             min_frame = mapping_data[self.animation_layer.frame_mapping].min()
             max_frame = mapping_data[self.animation_layer.frame_mapping].max()
