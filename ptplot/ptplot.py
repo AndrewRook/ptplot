@@ -114,10 +114,6 @@ class PTPlot:
                 slider.js_on_change("value", callback)
         rows = [figures] if len(widgets) == 0 else [figures, widgets]
         return layout(rows)
-        # if len(figures) == 1:
-        #     return figures[0]
-        # else:
-        #     raise NotImplementedError
 
 
 def _apply_mapping(
