@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import pandas as pd
 from bokeh.plotting import figure
 
-from typing import TYPE_CHECKING, Callable, Iterable, Optional
+from typing import TYPE_CHECKING, Callable, Sequence, Optional
 
 if TYPE_CHECKING:
     from ptplot import PTPlot
@@ -16,13 +16,13 @@ if TYPE_CHECKING:
 class _Metadata:
     label: Optional[str] = ""
     is_home: bool = True
-    color_list: Iterable[str] = ("black", "gray")
+    color_list: Sequence[str] = ("black", "gray")
     marker: Optional[Callable] = None
 
 
 class Layer(ABC):
 
-    def get_mappings(self) -> Iterable[str]:
+    def get_mappings(self) -> Sequence[str]:
         return []
 
     def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata):
@@ -41,8 +41,8 @@ class Animation(Layer):
 
 
 def _generate_aesthetics(
-        team_color_mapping: dict, ball_colors: [Optional[Iterable]] = None,
-        ball_marker_generator: [Optional[Callable]] = None
+        team_color_mapping: dict, ball_colors: Optional[Sequence] = None,
+        ball_marker_generator: Optional[Callable] = None
 ):
     class Aesthetics(Layer):
         def __init__(self, team_ball_mapping=None, home_away_mapping=None, ball_identifier=None):

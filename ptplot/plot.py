@@ -5,7 +5,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from bokeh.models import ColumnDataSource, CDSView, CustomJS, IndexFilter
-from typing import TYPE_CHECKING, Iterable, Optional
+from typing import TYPE_CHECKING, Sequence, Optional
 
 from ptplot.core import Layer, _Metadata
 
@@ -24,7 +24,7 @@ class Tracks(Layer):
         self.animate = animate
         self.callback = FIND_ALL_FRAMES_UP_TO_CURRENT_FRAME
 
-    def get_mappings(self) -> Iterable[str]:
+    def get_mappings(self) -> Sequence[str]:
         return [self.x, self.y, self.track_mapping]
 
     def set_up_animation(self, graphics: GlyphRenderer):
@@ -82,7 +82,7 @@ class Positions(Layer):
         self.frame_filter = frame_filter
         self.callback = FIND_CURRENT_FRAME
 
-    def get_mappings(self) -> Iterable[str]:
+    def get_mappings(self) -> Sequence[str]:
         mappings = [self.x, self.y]
 
         if self.frame_filter is not None:

@@ -7,7 +7,7 @@ import patsy
 from bokeh.plotting import figure
 from bokeh.layouts import layout
 from bokeh.models import Slider
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from .core import Animation
 
@@ -20,7 +20,7 @@ class PTPlot:
         self.data = data
         self.pixel_height = pixel_height
 
-        self.layers = []
+        self.layers: List[Layer] = []
 
     @property
     def faceting(self):
