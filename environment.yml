@@ -5,6 +5,7 @@ channels:
 dependencies:
   - black
   - flake8
+  - mypy
   - notebook
   - numpy
   - pandas

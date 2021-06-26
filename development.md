@@ -12,11 +12,12 @@ $ conda env create -f environment.yml
 
 ## Running tests and style checks
 
-`ptplot` uses `pytest`, `flake8`, and `black`. All of these must
+`ptplot` uses `pytest`, `flake8`, `mypy`, and `black`. All of these must
 pass in order for a PR to be merged, so it's valuable to run them
 yourself locally before pushing changes:
 
 ```bash
+$ python -m mypy ptplot/
 $ python -m pytest
 $ python -m black -l 120 ptplot/
 $ python -m flake8 ptplot/
