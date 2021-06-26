@@ -32,14 +32,6 @@ class Layer(ABC):
         pass
 
 
-class Animation(Layer):
-    def __init__(self, frame_mapping):
-        self.frame_mapping = frame_mapping
-
-    def get_mappings(self):
-        return [self.frame_mapping]
-
-
 def _generate_aesthetics(
         team_color_mapping: dict, ball_colors: Optional[Sequence] = None,
         ball_marker_generator: Optional[Callable] = None

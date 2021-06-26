@@ -9,7 +9,7 @@ from bokeh.layouts import layout
 from bokeh.models import Slider
 from typing import TYPE_CHECKING, List, Optional
 
-from .core import Animation
+from ptplot.animation import Animation
 
 if TYPE_CHECKING:
     from ptplot.core import Layer, _Metadata
@@ -120,7 +120,7 @@ def _apply_mapping(
         data: pd.DataFrame, mapping: str,
 ):
     if mapping in data.columns:
-        return data[mapping]
+        return data[mapping].copy(deep=True)
 
     processed_string_data = patsy.dmatrix(
         f"I({mapping}) - 1",
@@ -134,4 +134,5 @@ def _apply_mapping(
         if len(processed_string_data.columns) == 1 # pure arithmetic
         else processed_string_data[processed_string_data.columns[1]].astype(bool) # conditional
     )
+    final_data.name = mapping # Have to explicitly assign the mapping as the name
     return final_data
