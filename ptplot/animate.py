@@ -3,7 +3,7 @@ from __future__ import annotations
 from bokeh.models import Slider
 from typing import TYPE_CHECKING, Iterable, Optional
 
-from .layer import Layer
+from ptplot.core import Layer
 
 if TYPE_CHECKING:
     from bokeh.plotting import figure

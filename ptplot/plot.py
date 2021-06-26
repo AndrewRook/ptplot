@@ -7,13 +7,12 @@ from copy import deepcopy
 from bokeh.models import ColumnDataSource, CDSView, CustomJS, IndexFilter
 from typing import TYPE_CHECKING, Iterable, Optional
 
-from .layer import Layer
+from ptplot.core import Layer, _Metadata
 
 if TYPE_CHECKING:
     from bokeh.plotting import figure
     from bokeh.models import GlyphRenderer
     from .ptplot import PTPlot
-    from .nfl import Metadata
     import pandas as pd
 
 
@@ -48,7 +47,7 @@ class Tracks(Layer):
 
         return animate
 
-    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: Metadata):
+    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata):
 
         line_color = (
             metadata.color_list[0] if metadata.is_home is True
@@ -105,7 +104,7 @@ class Positions(Layer):
 
         return animate
 
-    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: Metadata):
+    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata):
 
         # If you have multiple frames but only want to show one (even in an animation):
         if self.frame_filter is not None:

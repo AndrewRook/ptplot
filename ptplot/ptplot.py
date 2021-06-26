@@ -9,10 +9,10 @@ from bokeh.layouts import layout
 from bokeh.models import Slider
 from typing import TYPE_CHECKING, Optional
 
-from .nfl import Metadata, Animation
+from .core import Animation
 
 if TYPE_CHECKING:
-    from .layer import Layer
+    from ptplot.core import Layer, _Metadata
 
 
 class PTPlot:
@@ -30,7 +30,7 @@ class PTPlot:
     @property
     def aesthetics(self):
         mapper = self._get_attribute_from_layers("map_aesthetics")
-        return mapper if mapper is not None else lambda data: [(data, Metadata())]
+        return mapper if mapper is not None else lambda data: [(data, _Metadata())]
 
     @property
     def animation_layer(self):

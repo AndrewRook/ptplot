@@ -10,8 +10,8 @@ import warnings
 
 from functools import partial
 
-from .layer import Layer
-from typing import TYPE_CHECKING, Callable, Iterable, Optional
+from ptplot.core import Layer, _generate_aesthetics, _Metadata
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from bokeh.plotting import figure
@@ -56,79 +56,18 @@ NFL_TEAMS = {
 }
 
 
-class Aesthetics(Layer):
-    def __init__(self, team_ball_mapping=None, home_away_mapping=None, ball_identifier=None):
-        self.team_ball_mapping = team_ball_mapping
-        self.home_away_mapping = home_away_mapping
-        self.ball_identifier = ball_identifier
-        self.ball_colors = ["brown", "brown"]
-        self.team_color_mapping = NFL_TEAMS
+def _ball_marker(figure: figure):
+    return partial(
+        figure.circle, radius=1, line_width=2, fill_alpha=0.9, fill_color="brown", line_color="brown"
+    )
+    # return partial(
+    #     figure.ellipse, width=2, height=1, angle=0.0,
+    #     fill_color="brown", fill_alpha=0.9, line_color="brown"
+    # )
 
-    def get_mappings(self):
-        mappings = []
-        if self.team_ball_mapping is not None:
-            mappings.append(self.team_ball_mapping)
-        if self.home_away_mapping is not None:
-            mappings.append(self.home_away_mapping)
-        return mappings
-
-    def map_aesthetics(self, data: pd.DataFrame):
-        if self.team_ball_mapping is not None:
-            team_ball_groups = data.groupby(self.team_ball_mapping)
-            for team_ball_name, team_ball_data in team_ball_groups:
-                if self.ball_identifier is not None and team_ball_name == self.ball_identifier:
-                    yield team_ball_data, Metadata(
-                        label=team_ball_name, is_home=True,
-                        color_list=self.ball_colors, marker=self._ball_marker
-                    )
-                else:
-                    team_color_list = self.team_color_mapping[team_ball_name]
-                    if self.home_away_mapping is not None:
-                        home_away_groups = team_ball_data.groupby(self.home_away_mapping)
-                        for is_home, home_away_data in home_away_groups:
-                            yield home_away_data, Metadata(
-                                label=team_ball_name, is_home=is_home, color_list=team_color_list
-                            )
-                    else:
-                        yield team_ball_data, Metadata(
-                            label=team_ball_name, is_home=True, color_list=team_color_list
-                        )
-        else:
-            if self.home_away_mapping is not None:
-                home_away_groups = data.groupby(self.home_away_mapping)
-                for is_home, home_away_data in home_away_groups:
-                    yield home_away_data, Metadata(
-                        is_home=is_home
-                    )
-            else:
-                yield data, Metadata()
-
-    @staticmethod
-    def _ball_marker(figure: figure):
-        return partial(
-            figure.circle, radius=1, line_width=2, fill_alpha=0.9, fill_color="brown", line_color="brown"
-        )
-        # return partial(
-        #     figure.ellipse, width=2, height=1, angle=0.0,
-        #     fill_color="brown", fill_alpha=0.9, line_color="brown"
-        # )
-
-
-class Animation(Layer):
-    def __init__(self, frame_mapping):
-        self.frame_mapping = frame_mapping
-
-    def get_mappings(self):
-        return [self.frame_mapping]
-
-
-from dataclasses import dataclass, field
-@dataclass
-class Metadata:
-    label: Optional[str] = ""
-    is_home: bool = True
-    color_list: Iterable[str] = ("black", "gray")
-    marker: Optional[Callable] = None
+Aesthetics = _generate_aesthetics(
+    NFL_TEAMS, ball_colors=["brown", "brown"], ball_marker_generator=_ball_marker
+)
 
 
 class Field(Layer):
@@ -154,7 +93,7 @@ class Field(Layer):
     def get_mappings(self):
         return []
 
-    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: Metadata):
+    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata):
 
         field_width_yards = 53.3
         y_min = 0 - self.sideline_buffer
