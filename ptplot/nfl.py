@@ -65,6 +65,7 @@ def _ball_marker(figure: figure):
     #     fill_color="brown", fill_alpha=0.9, line_color="brown"
     # )
 
+
 Aesthetics = _generate_aesthetics(
     NFL_TEAMS, ball_colors=["brown", "brown"], ball_marker_generator=_ball_marker
 )

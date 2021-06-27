@@ -2,6 +2,38 @@ import pandas as pd
 import pytest
 
 import ptplot.ptplot as pt
+from ptplot.animation import Animation
+from ptplot.core import Layer
+
+
+class TestPTPlotAnimationLayer:
+    @pytest.fixture(scope="function")
+    def layer(self):
+        class TestLayer(Layer):
+            pass
+
+        return TestLayer
+
+    def test_returns_none_if_no_animation(self, layer):
+        plot = pt.PTPlot(pd.DataFrame()) + layer()
+        assert plot.animation_layer is None
+
+    def test_returns_layer_if_exists(self):
+        animation_layer = Animation("frame")
+        plot = pt.PTPlot(pd.DataFrame()) + animation_layer
+        assert plot.animation_layer == animation_layer
+
+    def test_returns_layer_if_subclass(self):
+        class AnimationSubclass(Animation):
+            def extra_method(self):
+                return "extra method"
+        plot = pt.PTPlot(pd.DataFrame()) + AnimationSubclass("frame")
+        assert plot.animation_layer.extra_method() == "extra method"
+
+    def test_errors_with_multiple_layers(self):
+        plot = pt.PTPlot(pd.DataFrame()) + Animation("frame") + Animation("other frame")
+        with pytest.raises(ValueError):
+            plot.animation_layer
 
 
 class TestInternalApplyMapping:
