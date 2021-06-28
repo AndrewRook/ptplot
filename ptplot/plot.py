@@ -4,6 +4,7 @@ import numpy as np
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
+from bokeh.models import LabelSet
 from bokeh.models import ColumnDataSource, CDSView, CustomJS, IndexFilter
 from typing import TYPE_CHECKING, Sequence, Optional
 
@@ -76,9 +77,10 @@ class Tracks(Layer):
 
 
 class Positions(Layer):
-    def __init__(self, x: str, y: str, frame_filter: Optional[str] = None):
+    def __init__(self, x: str, y: str, number: Optional[str] = None, frame_filter: Optional[str] = None):
         self.x = x
         self.y = y
+        self.number = number
         self.frame_filter = frame_filter
         self.callback = FIND_CURRENT_FRAME
 
@@ -87,6 +89,8 @@ class Positions(Layer):
 
         if self.frame_filter is not None:
             mappings += [self.frame_filter]
+        if self.number is not None:
+            mappings += [self.number]
         return mappings
 
     def set_up_animation(self, graphics: GlyphRenderer):
@@ -135,6 +139,16 @@ class Positions(Layer):
                 muted_alpha=0.3,
                 legend_label=metadata.label
             )
+
+        if self.number is not None:
+            text_color = "white" if metadata.is_home is True else "black"
+            labels = bokeh_figure.text(
+                x=self.x, y=self.y, text=self.number,
+                source=source, view=view,
+                text_color=text_color, text_align="center", text_baseline="middle", text_font_size="10px"
+            )
+            # Don't need to set up a separate animation for the numbers because the source, view, and callback are
+            # all the same
         if self.frame_filter is not None:
             return None
         else:

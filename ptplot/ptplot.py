@@ -10,9 +10,10 @@ from bokeh.models import Slider
 from typing import TYPE_CHECKING, List, Optional
 
 from ptplot.animation import Animation
+from ptplot.core import _Metadata
 
 if TYPE_CHECKING:
-    from ptplot.core import Layer, _Metadata
+    from ptplot.core import Layer
 
 
 class PTPlot:
