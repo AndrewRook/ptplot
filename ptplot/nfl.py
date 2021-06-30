@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import math
 import matplotlib
-matplotlib.use('Agg')
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -52,33 +53,31 @@ NFL_TEAMS = {
     "TEN": ("#002244", "#4b92db"),
     "WAS": ("#773141", "#ffb612"),
     "OAK": ("black", "#a5acaf"),
-    "STL": ("#002244", "#b3995d")
+    "STL": ("#002244", "#b3995d"),
 }
 
 
 def _ball_marker(figure: figure):
-    return partial(
-        figure.circle, radius=1, line_width=2, fill_alpha=0.9, fill_color="brown", line_color="brown"
-    )
+    return partial(figure.circle, radius=1, line_width=2, fill_alpha=0.9, fill_color="brown", line_color="brown")
     # return partial(
     #     figure.ellipse, width=2, height=1, angle=0.0,
     #     fill_color="brown", fill_alpha=0.9, line_color="brown"
     # )
 
 
-Aesthetics = _generate_aesthetics(
-    NFL_TEAMS, ball_colors=["brown", "brown"], ball_marker_generator=_ball_marker
-)
+Aesthetics = _generate_aesthetics(NFL_TEAMS, ball_colors=["brown", "brown"], ball_marker_generator=_ball_marker)
 
 
 class Field(Layer):
     def __init__(
-            self, vertical_orientation: bool = False,
-            min_yardline: float = -13,
-            max_yardline: float = 113,
-            relative_yardlines: bool = False,
-            sideline_buffer: float = 3,
-            pixels_per_yard: int = 20):
+        self,
+        vertical_orientation: bool = False,
+        min_yardline: float = -13,
+        max_yardline: float = 113,
+        relative_yardlines: bool = False,
+        sideline_buffer: float = 3,
+        pixels_per_yard: int = 20,
+    ):
         if vertical_orientation:
             raise NotImplementedError("Don't have that yet")
 
@@ -102,10 +101,7 @@ class Field(Layer):
         x_yards = self.max_yardline - self.min_yardline
         y_yards = y_max - y_min
 
-        fig, ax = plt.subplots(
-            figsize=(x_yards, y_yards), dpi=self.pixels_per_yard,
-            tight_layout={"pad": 0}
-        )
+        fig, ax = plt.subplots(figsize=(x_yards, y_yards), dpi=self.pixels_per_yard, tight_layout={"pad": 0})
         ax.set_facecolor("green")
         ax.set_axis_off()
         ax.add_artist(ax.patch)
@@ -119,21 +115,20 @@ class Field(Layer):
             # If absolute, use max/min but not past the goal lines
             max(self.min_yardline, 0 if not self.relative_yardlines else self.min_yardline),
             min(self.max_yardline, 100 if not self.relative_yardlines else self.max_yardline),
-            5
+            5,
         )
         ax.vlines(yardlines, 0, field_width_yards, color="white", lw=20)
         if not self.relative_yardlines:
-            endzone_yardlines = [
-                yard
-                for yard in [-10, 110]
-                if yard > self.min_yardline and yard < self.max_yardline
-            ]
+            endzone_yardlines = [yard for yard in [-10, 110] if yard > self.min_yardline and yard < self.max_yardline]
             ax.vlines(endzone_yardlines, 0, field_width_yards, color="white", lw=40)
 
         if self.sideline_buffer > 0:
             ax.hlines(
-                [0, field_width_yards], max(-10.2, self.min_yardline), min(110.2, self.max_yardline),
-                color="white", lw=40
+                [0, field_width_yards],
+                max(-10.2, self.min_yardline),
+                min(110.2, self.max_yardline),
+                color="white",
+                lw=40,
             )
 
         # Set up numbers
@@ -142,22 +137,15 @@ class Field(Layer):
             # If absolute, use max/min but not past the 10s
             max(self.min_yardline, 10 if not self.relative_yardlines else self.min_yardline),
             min(self.max_yardline, 90 if not self.relative_yardlines else self.max_yardline),
-            10
+            10,
         )
 
-        number_options = {
-            "fontsize": 150,
-            "color": "white",
-            "weight": "bold",
-            "ha": "center",
-            "va": "center"
-        }
+        number_options = {"fontsize": 150, "color": "white", "weight": "bold", "ha": "center", "va": "center"}
         for yardline in number_yardlines:
             number = yardline if self.relative_yardlines else 50 - abs(50 - yardline)
             string_marker = str(number)
             string_marker = (
-                f" \u200a{string_marker}" if len(string_marker) == 1 else
-                f"{string_marker[0]}\u200a{string_marker[1]}"
+                f" \u200a{string_marker}" if len(string_marker) == 1 else f"{string_marker[0]}\u200a{string_marker[1]}"
             )
             ax.text(yardline, 3, string_marker, **number_options)
             ax.text(yardline, 50, string_marker, **number_options, rotation=180)
@@ -190,14 +178,9 @@ class Field(Layer):
 
 
 def _get_vertical_line_locations(
-        min_yards: float, max_yards: float, yard_modulus: int,
+    min_yards: float,
+    max_yards: float,
+    yard_modulus: int,
 ):
-    vlines = [
-        yard
-        for yard in range(
-            math.ceil(min_yards),
-            math.floor(max_yards) + 1
-        )
-        if yard % yard_modulus == 0
-    ]
+    vlines = [yard for yard in range(math.ceil(min_yards), math.floor(max_yards) + 1) if yard % yard_modulus == 0]
     return vlines
