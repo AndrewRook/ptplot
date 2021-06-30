@@ -18,7 +18,7 @@ yourself locally before pushing changes:
 
 ```bash
 $ python -m mypy ptplot/
-$ python -m pytest
+$ python -m pytest tests/ ptplot/
 $ python -m black -l 120 ptplot/
 $ python -m flake8 ptplot/
 ```
