@@ -180,6 +180,14 @@ class Field(Layer):
         # to it automatically :(
         bokeh_figure.width = int(round(bokeh_figure.height * x_yards / y_yards))
 
+        # For some reason you have to manually specify the range bounds here in order to be able
+        # access them downstream (apparently otherwise they're only computed in the JS, see
+        # https://stackoverflow.com/a/50735228/1373664
+        bokeh_figure.x_range.start = self.min_yardline
+        bokeh_figure.x_range.end = self.max_yardline
+        bokeh_figure.y_range.start = y_min
+        bokeh_figure.y_range.end = y_max
+
 
 def _get_vertical_line_locations(
         min_yards: float, max_yards: float, yard_modulus: int,

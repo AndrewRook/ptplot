@@ -77,12 +77,16 @@ class Tracks(Layer):
 
 
 class Positions(Layer):
-    def __init__(self, x: str, y: str, number: Optional[str] = None, frame_filter: Optional[str] = None):
+    def __init__(
+            self, x: str, y: str, number: Optional[str] = None, frame_filter: Optional[str] = None,
+            marker_radius: float = 1
+    ):
         self.x = x
         self.y = y
         self.number = number
         self.frame_filter = frame_filter
         self.callback = FIND_CURRENT_FRAME
+        self.marker_radius = marker_radius
 
     def get_mappings(self) -> Sequence[str]:
         mappings = [self.x, self.y]
@@ -135,17 +139,28 @@ class Positions(Layer):
             )
             graphics = bokeh_figure.circle(
                 x=self.x, y=self.y, source=source, view=view,
-                fill_color=fill_color, line_color=line_color, radius=1, line_width=2,
+                fill_color=fill_color, line_color=line_color, radius=self.marker_radius, line_width=2,
                 muted_alpha=0.3,
                 legend_label=metadata.label
             )
 
         if self.number is not None:
+            # https://github.com/bokeh/bokeh/issues/2439#issuecomment-447498732
             text_color = "white" if metadata.is_home is True else "black"
+
+            # This is a total kludge to scale font size up and down with plot size,
+            # based on a font size I found to work reasonably well with two-digit
+            # numbers
+            pixels_per_data_unit = (
+                    bokeh_figure.height / abs(bokeh_figure.y_range.end - bokeh_figure.y_range.start)
+            )
+            font_size = pixels_per_data_unit * self.marker_radius
+
             labels = bokeh_figure.text(
                 x=self.x, y=self.y, text=self.number,
                 source=source, view=view,
-                text_color=text_color, text_align="center", text_baseline="middle", text_font_size="10px"
+                text_color=text_color, text_align="center", text_baseline="middle",
+                text_font_size=f"{font_size:.2f}px"
             )
             # Don't need to set up a separate animation for the numbers because the source, view, and callback are
             # all the same
