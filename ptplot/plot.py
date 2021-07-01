@@ -2,9 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from abc import ABC, abstractmethod
-from copy import deepcopy
-from bokeh.models import LabelSet
 from bokeh.models import ColumnDataSource, CDSView, CustomJS, IndexFilter
 from typing import TYPE_CHECKING, Sequence, Optional
 
@@ -141,7 +138,7 @@ class Positions(Layer):
             pixels_per_data_unit = bokeh_figure.height / abs(bokeh_figure.y_range.end - bokeh_figure.y_range.start)
             font_size = pixels_per_data_unit * self.marker_radius
 
-            labels = bokeh_figure.text(
+            bokeh_figure.text(
                 x=self.x,
                 y=self.y,
                 text=self.number,
@@ -172,7 +169,7 @@ for (let i = 0; i < data[frame_column].length; i++) {
     if (data[frame_column][i] > cb_obj.value) {
         break;
     }
-} 
+}
 filter.indices = indices;
 source.change.emit();
 """
@@ -190,7 +187,7 @@ for (const column in data) {
         if (full_data[frame_column][i] > cb_obj.value) {
             break;
         }
-    } 
+    }
 }
 source.change.emit();
 """

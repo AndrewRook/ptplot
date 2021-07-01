@@ -41,7 +41,7 @@ class PTPlot:
                 if layer_to_return is None:
                     layer_to_return = layer
                 else:
-                    raise ValueError(f"Only one Animation layer can be used for a given visualization")
+                    raise ValueError("Only one Animation layer can be used for a given visualization")
         return layer_to_return
 
     def _get_attribute_from_layers(self, attribute_name):

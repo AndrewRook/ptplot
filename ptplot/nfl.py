@@ -3,8 +3,6 @@ from __future__ import annotations
 import math
 import matplotlib
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import warnings
@@ -13,6 +11,9 @@ from functools import partial
 
 from ptplot.core import Layer, _generate_aesthetics, _Metadata
 from typing import TYPE_CHECKING
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
 
 if TYPE_CHECKING:
     from bokeh.plotting import figure
