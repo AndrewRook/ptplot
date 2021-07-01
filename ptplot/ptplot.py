@@ -10,9 +10,10 @@ from bokeh.models import Slider
 from typing import TYPE_CHECKING, List, Optional
 
 from ptplot.animation import Animation
+from ptplot.core import _Metadata
 
 if TYPE_CHECKING:
-    from ptplot.core import Layer, _Metadata
+    from ptplot.core import Layer
 
 
 class PTPlot:
@@ -40,9 +41,7 @@ class PTPlot:
                 if layer_to_return is None:
                     layer_to_return = layer
                 else:
-                    raise ValueError(
-                        f"Only one Animation layer can be used for a given visualization"
-                    )
+                    raise ValueError("Only one Animation layer can be used for a given visualization")
         return layer_to_return
 
     def _get_attribute_from_layers(self, attribute_name):
@@ -52,9 +51,7 @@ class PTPlot:
                 if attribute is None:
                     attribute = getattr(layer, attribute_name)
                 else:
-                    raise ValueError(
-                        f"Multiple layers have {attribute_name} methods"
-                    )
+                    raise ValueError(f"Multiple layers have {attribute_name} methods")
         return attribute
 
     def __add__(self, layer: Layer) -> PTPlot:
@@ -66,15 +63,10 @@ class PTPlot:
     def draw(self):
 
         # Extract all mappings set by each layer, then prune duplicates
-        mappings = itertools.chain(*[
-            layer.get_mappings() for layer in self.layers
-        ])
+        mappings = itertools.chain(*[layer.get_mappings() for layer in self.layers])
         mappings = set(mappings)
         # make a dataframe where each mapping is a new column, named based on the mapping
-        mapping_data = pd.DataFrame({
-            mapping: _apply_mapping(self.data, mapping)
-            for mapping in mappings
-        })
+        mapping_data = pd.DataFrame({mapping: _apply_mapping(self.data, mapping) for mapping in mappings})
 
         # If animation, sort the data by the frame column
         if self.animation_layer is not None:
@@ -103,11 +95,7 @@ class PTPlot:
         if self.animation_layer is not None:
             min_frame = mapping_data[self.animation_layer.frame_mapping].min()
             max_frame = mapping_data[self.animation_layer.frame_mapping].max()
-            slider = Slider(
-                start=min_frame, end=max_frame,
-                value=min_frame, step=1,
-                title="Frame"
-            )
+            slider = Slider(start=min_frame, end=max_frame, value=min_frame, step=1, title="Frame")
             widgets.append(slider)
             for animation in animations:
                 callback = animation(self.animation_layer.frame_mapping, min_frame)
@@ -117,22 +105,20 @@ class PTPlot:
 
 
 def _apply_mapping(
-        data: pd.DataFrame, mapping: str,
+    data: pd.DataFrame,
+    mapping: str,
 ):
     if mapping in data.columns:
         return data[mapping].copy(deep=True)
 
     processed_string_data = patsy.dmatrix(
-        f"I({mapping}) - 1",
-        data,
-        NA_action=patsy.NAAction(NA_types=[]),
-        return_type="dataframe"
+        f"I({mapping}) - 1", data, NA_action=patsy.NAAction(NA_types=[]), return_type="dataframe"
     )
 
     final_data = (
         processed_string_data[processed_string_data.columns[0]]
-        if len(processed_string_data.columns) == 1 # pure arithmetic
-        else processed_string_data[processed_string_data.columns[1]].astype(bool) # conditional
+        if len(processed_string_data.columns) == 1  # pure arithmetic
+        else processed_string_data[processed_string_data.columns[1]].astype(bool)  # conditional
     )
-    final_data.name = mapping # Have to explicitly assign the mapping as the name
+    final_data.name = mapping  # Have to explicitly assign the mapping as the name
     return final_data
