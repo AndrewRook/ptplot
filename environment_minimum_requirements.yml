@@ -10,6 +10,7 @@ dependencies:
   - notebook==6.2.0
   - numpy==1.19.5
   - pandas==1.2.0
+  - patsy==0.5.1
   - pip==20.3.3
   - pytest==6.2.1
   - pytest-cov==2.11.1

@@ -10,6 +10,7 @@ dependencies:
   - notebook
   - numpy
   - pandas
+  - patsy
   - pip
   - pytest
   - pytest-cov
