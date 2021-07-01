@@ -4,13 +4,15 @@ channels:
   - defaults
 dependencies:
   - black
+  - bokeh
   - flake8
+  - matplotlib
   - mypy
   - notebook
   - numpy
   - pandas
+  - patsy
   - pip
-  - plotly
   - pytest
   - pytest-cov
   - tox
