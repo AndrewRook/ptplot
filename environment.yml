@@ -6,6 +6,7 @@ dependencies:
   - black
   - bokeh
   - flake8
+  - matplotlib
   - mypy
   - notebook
   - numpy
