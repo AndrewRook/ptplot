@@ -10,6 +10,7 @@ from bokeh.models import Slider, Toggle, CustomJS
 from typing import TYPE_CHECKING, List, Optional
 
 from ptplot.animation import Animation
+from ptplot.core import _Aesthetics
 from ptplot.core import _Metadata
 
 if TYPE_CHECKING:
@@ -29,19 +30,27 @@ class PTPlot:
         return mapper if mapper is not None else lambda data: [(None, data)]
 
     @property
-    def aesthetics(self):
-        mapper = self._get_attribute_from_layers("map_aesthetics")
-        return mapper if mapper is not None else lambda data: [(data, _Metadata())]
+    def aesthetics_layer(self):
+        layer = self._get_class_instance_from_layers(_Aesthetics)
+        if layer is None:
+            layer = _Aesthetics()
+        return layer
+
+        #mapper = self._get_attribute_from_layers("map_aesthetics")
+        #return mapper if mapper is not None else lambda data: [(data, _Metadata())]
 
     @property
     def animation_layer(self):
+        return self._get_class_instance_from_layers(Animation)
+
+    def _get_class_instance_from_layers(self, class_name):
         layer_to_return = None
         for layer in self.layers:
-            if isinstance(layer, Animation):
+            if isinstance(layer, class_name):
                 if layer_to_return is None:
                     layer_to_return = layer
                 else:
-                    raise ValueError("Only one Animation layer can be used for a given visualization")
+                    raise ValueError(f"Only one {class_name} layer can be used for a given visualization")
         return layer_to_return
 
     def _get_attribute_from_layers(self, attribute_name):
@@ -83,7 +92,7 @@ class PTPlot:
             figure_object.ygrid.visible = False
             figure_object.xaxis.visible = False
             figure_object.yaxis.visible = False
-            for data_subset, metadata in self.aesthetics(facet_data):
+            for data_subset, metadata in self.aesthetics_layer.map_aesthetics(facet_data):
                 for layer in self.layers:
                     layer_animation = layer.draw(self, data_subset, figure_object, metadata)
                     if layer_animation is not None:

@@ -9,7 +9,7 @@ import warnings
 
 from functools import partial
 
-from ptplot.core import Layer, _generate_aesthetics, _Metadata
+from ptplot.core import Layer, _Aesthetics, _Metadata
 from typing import TYPE_CHECKING
 
 matplotlib.use("Agg")
@@ -58,15 +58,16 @@ NFL_TEAMS = {
 }
 
 
-def _ball_marker(figure: figure):
-    return partial(figure.circle, radius=1, line_width=2, fill_alpha=0.9, fill_color="brown", line_color="brown")
-    # return partial(
-    #     figure.ellipse, width=2, height=1, angle=0.0,
-    #     fill_color="brown", fill_alpha=0.9, line_color="brown"
-    # )
-
-
-Aesthetics = _generate_aesthetics(NFL_TEAMS, ball_colors=["brown", "brown"], ball_marker_generator=_ball_marker)
+class Aesthetics(_Aesthetics):
+    team_color_mapping = NFL_TEAMS
+    ball_colors = ["brown", "brown"]
+    @staticmethod
+    def ball_marker_generator(figure: figure):
+        return partial(figure.circle, radius=1, line_width=2, fill_alpha=0.9, fill_color="brown", line_color="brown")
+        # return partial(
+        #     figure.ellipse, width=2, height=1, angle=0.0,
+        #     fill_color="brown", fill_alpha=0.9, line_color="brown"
+        # )
 
 
 class Field(Layer):
