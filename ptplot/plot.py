@@ -15,12 +15,13 @@ if TYPE_CHECKING:
 
 
 class Tracks(Layer):
-    def __init__(self, x: str, y: str, track_mapping: str, animate: bool = True):
+    def __init__(self, x: str, y: str, track_mapping: str, animate: bool = True, name: Optional[str] = None):
         self.x = x
         self.y = y
         self.track_mapping = track_mapping
         self.animate = animate
         self.callback = FIND_ALL_FRAMES_UP_TO_CURRENT_FRAME
+        self.name = name
 
     def get_mappings(self) -> Sequence[str]:
         return [self.x, self.y, self.track_mapping]
@@ -57,6 +58,7 @@ class Tracks(Layer):
                 line_width=2,
                 muted_alpha=0.3,
                 legend_label=metadata.label,
+                name=self.name
             )
             all_graphics.append(graphics)
 
@@ -68,7 +70,9 @@ class Tracks(Layer):
 
 class Positions(Layer):
     def __init__(
-        self, x: str, y: str, number: Optional[str] = None, frame_filter: Optional[str] = None, marker_radius: float = 1
+        self, x: str, y: str, number: Optional[str] = None,
+        frame_filter: Optional[str] = None, marker_radius: float = 1,
+        name: Optional[str] = None
     ):
         self.x = x
         self.y = y
@@ -76,6 +80,7 @@ class Positions(Layer):
         self.frame_filter = frame_filter
         self.callback = FIND_CURRENT_FRAME
         self.marker_radius = marker_radius
+        self.name = name
 
     def get_mappings(self) -> Sequence[str]:
         mappings = [self.x, self.y]
@@ -109,7 +114,8 @@ class Positions(Layer):
 
         if metadata.marker is not None:
             graphics = metadata.marker(bokeh_figure)(
-                x=self.x, y=self.y, source=source, view=view, muted_alpha=0.3, legend_label=metadata.label
+                x=self.x, y=self.y, source=source, view=view, muted_alpha=0.3, legend_label=metadata.label,
+                name=self.name
             )
         else:
             fill_color, line_color = (
@@ -126,6 +132,7 @@ class Positions(Layer):
                 line_width=2,
                 muted_alpha=0.3,
                 legend_label=metadata.label,
+                name=self.name
             )
 
         if self.number is not None:
