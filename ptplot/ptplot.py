@@ -81,6 +81,8 @@ class PTPlot:
             figure_object.x_range.bounds = figure_object.y_range.bounds = "auto"
             figure_object.xgrid.visible = False
             figure_object.ygrid.visible = False
+            figure_object.xaxis.visible = False
+            figure_object.yaxis.visible = False
             for data_subset, metadata in self.aesthetics(facet_data):
                 for layer in self.layers:
                     layer_animation = layer.draw(self, data_subset, figure_object, metadata)
