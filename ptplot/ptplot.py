@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, List, Optional
 
 from ptplot.animation import Animation
 from ptplot.core import _Aesthetics
-from ptplot.core import _Metadata
+from ptplot.facet import Facet
 
 if TYPE_CHECKING:
     from ptplot.core import Layer
@@ -25,9 +25,20 @@ class PTPlot:
         self.layers: List[Layer] = []
 
     @property
-    def faceting(self):
-        mapper = self._get_attribute_from_layers("faceting")
-        return mapper if mapper is not None else lambda data: [(None, data)]
+    def facet_layer(self):
+        layer = self._get_class_instance_from_layers(Facet)
+        if layer is None:
+            try:
+                layer = self._layer
+            except AttributeError:
+                class DummyFacet(Facet):
+                    def faceting(self, data):
+                        self.num_col = 1
+                        self.num_row = 1
+                        return [(None, data)]
+                self._layer = DummyFacet("dummy")
+                layer = self._layer
+        return layer
 
     @property
     def aesthetics_layer(self):
@@ -35,9 +46,6 @@ class PTPlot:
         if layer is None:
             layer = _Aesthetics()
         return layer
-
-        #mapper = self._get_attribute_from_layers("map_aesthetics")
-        #return mapper if mapper is not None else lambda data: [(data, _Metadata())]
 
     @property
     def animation_layer(self):
@@ -81,11 +89,14 @@ class PTPlot:
         if self.animation_layer is not None:
             mapping_data = mapping_data.sort_values(self.animation_layer.frame_mapping)
 
-        facets = self.faceting(mapping_data)
+        facets = self.facet_layer.faceting(mapping_data)
+
         figures = []
         animations = []
         for (facet_name, facet_data) in facets:
-            figure_object = figure(sizing_mode="scale_both", height=self.pixel_height)
+            figure_object = figure(
+                sizing_mode="scale_both", height=int(self.pixel_height / self.facet_layer.num_col)
+            )
             figure_object.x_range.range_padding = figure_object.y_range.range_padding = 0
             figure_object.x_range.bounds = figure_object.y_range.bounds = "auto"
             figure_object.xgrid.visible = False
@@ -147,8 +158,11 @@ else {
             for animation in animations:
                 callback = animation(self.animation_layer.frame_mapping, min_frame)
                 slider.js_on_change("value", callback)
-        rows = [figures] if len(widgets) == 0 else [figures, widgets]
-        return layout(rows)
+        from bokeh.layouts import gridplot, row
+        plot_grid = gridplot(figures, ncols=self.facet_layer.num_col)
+        if len(widgets) > 0:
+            plot_grid.children.append(row(widgets))
+        return plot_grid
 
 
 def _apply_mapping(
