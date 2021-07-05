@@ -6,7 +6,7 @@ from ptplot.animation import Animation
 from ptplot.core import Layer
 
 
-class TestPTPlotAnimationLayer:
+class TestInternalGetClassInstanceFromLayers:
     @pytest.fixture(scope="function")
     def layer(self):
         class TestLayer(Layer):
@@ -14,26 +14,28 @@ class TestPTPlotAnimationLayer:
 
         return TestLayer
 
-    def test_returns_none_if_no_animation(self, layer):
+    def test_returns_none_if_no_layer(self, layer):
+        class OtherLayer(Layer):
+            pass
         plot = pt.PTPlot(pd.DataFrame()) + layer()
-        assert plot.animation_layer is None
+        assert plot._get_class_instance_from_layers(OtherLayer) is None
 
-    def test_returns_layer_if_exists(self):
-        animation_layer = Animation("frame")
-        plot = pt.PTPlot(pd.DataFrame()) + animation_layer
-        assert plot.animation_layer == animation_layer
+    def test_returns_layer_if_exists(self, layer):
+        test_layer = layer()
+        plot = pt.PTPlot(pd.DataFrame()) + test_layer
+        assert plot._get_class_instance_from_layers(layer) == test_layer
 
-    def test_returns_layer_if_subclass(self):
-        class AnimationSubclass(Animation):
+    def test_returns_layer_if_subclass(self, layer):
+        class TestSubclass(layer):
             def extra_method(self):
                 return "extra method"
-        plot = pt.PTPlot(pd.DataFrame()) + AnimationSubclass("frame")
-        assert plot.animation_layer.extra_method() == "extra method"
+        plot = pt.PTPlot(pd.DataFrame()) + TestSubclass()
+        assert plot._get_class_instance_from_layers(layer).extra_method() == "extra method"
 
-    def test_errors_with_multiple_layers(self):
-        plot = pt.PTPlot(pd.DataFrame()) + Animation("frame") + Animation("other frame")
+    def test_errors_with_multiple_layers(self, layer):
+        plot = pt.PTPlot(pd.DataFrame()) + layer() + layer()
         with pytest.raises(ValueError):
-            plot.animation_layer
+            plot._get_class_instance_from_layers(layer)
 
 
 class TestInternalApplyMapping:

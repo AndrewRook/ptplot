@@ -61,15 +61,6 @@ class PTPlot:
                     raise ValueError(f"Only one {class_name} layer can be used for a given visualization")
         return layer_to_return
 
-    def _get_attribute_from_layers(self, attribute_name):
-        attribute = None
-        for layer in self.layers:
-            if hasattr(layer, attribute_name):
-                if attribute is None:
-                    attribute = getattr(layer, attribute_name)
-                else:
-                    raise ValueError(f"Multiple layers have {attribute_name} methods")
-        return attribute
 
     def __add__(self, layer: Layer) -> PTPlot:
         layer.__radd__(self)
