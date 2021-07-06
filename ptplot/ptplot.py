@@ -5,7 +5,7 @@ import pandas as pd
 import patsy
 
 from bokeh.plotting import figure
-from bokeh.layouts import layout
+from bokeh.layouts import gridplot, row
 from bokeh.models import Slider, Toggle, CustomJS
 from typing import TYPE_CHECKING, List, Optional
 
@@ -61,7 +61,6 @@ class PTPlot:
                     raise ValueError(f"Only one {class_name} layer can be used for a given visualization")
         return layer_to_return
 
-
     def __add__(self, layer: Layer) -> PTPlot:
         layer.__radd__(self)
         self.layers.append(layer)
@@ -86,7 +85,7 @@ class PTPlot:
         animations = []
         for (facet_name, facet_data) in facets:
             figure_object = figure(
-                sizing_mode="scale_both", height=int(self.pixel_height / self.facet_layer.num_col)
+                sizing_mode="scale_both", height=int(self.pixel_height / self.facet_layer.num_row)
             )
             figure_object.x_range.range_padding = figure_object.y_range.range_padding = 0
             figure_object.x_range.bounds = figure_object.y_range.bounds = "auto"
@@ -149,7 +148,6 @@ else {
             for animation in animations:
                 callback = animation(self.animation_layer.frame_mapping, min_frame)
                 slider.js_on_change("value", callback)
-        from bokeh.layouts import gridplot, row
         plot_grid = gridplot(figures, ncols=self.facet_layer.num_col)
         if len(widgets) > 0:
             plot_grid.children.append(row(widgets))

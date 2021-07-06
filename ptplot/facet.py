@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 from .core import Layer
 
 from typing import Optional
@@ -22,9 +24,9 @@ class Facet(Layer):
     def faceting(self, data):
         groups = data.groupby(self.facet_mapping)
         if self.num_col is not None:
-            self.num_row = len(groups) // self.num_col
+            self.num_row = math.ceil(len(groups) / self.num_col)
         elif self.num_row is not None:
-            self.num_col = len(groups) // self.num_row
+            self.num_col = math.ceil(len(groups) / self.num_row)
         else:
             self.num_row = len(groups)
             self.num_col = 1

@@ -17,7 +17,7 @@ pass in order for a PR to be merged, so it's valuable to run them
 yourself locally before pushing changes:
 
 ```bash
-$ python -m mypy ptplot/
+$ python -m mypy --exclude _version.py ptplot/ 
 $ python -m pytest tests/ ptplot/
 $ python -m black -l 120 ptplot/
 $ python -m flake8 ptplot/

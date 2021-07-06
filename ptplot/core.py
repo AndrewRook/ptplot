@@ -6,9 +6,10 @@ from dataclasses import dataclass
 import pandas as pd
 from bokeh.plotting import figure
 
-from typing import TYPE_CHECKING, Callable, Sequence, Optional
+from typing import TYPE_CHECKING, Any, Callable, Sequence, Optional
 
 if TYPE_CHECKING:
+    from bokeh.models import GlyphRenderer
     from ptplot import PTPlot
 
 
@@ -17,7 +18,7 @@ class _Metadata:
     label: Optional[str] = ""
     is_home: bool = True
     color_list: Sequence[str] = ("black", "gray")
-    marker: Optional[Callable] = None
+    marker: Optional[Callable[[figure], Callable[..., GlyphRenderer]]] = None
 
 
 class Layer(ABC):
@@ -33,7 +34,7 @@ class Layer(ABC):
 
 class _Aesthetics(Layer):
     team_color_mapping: dict = {}
-    ball_colors: Optional[Sequence] = None
+    ball_colors: Sequence[str] = ("black", "black")
     ball_marker_generator: Optional[Callable] = None
 
     def __init__(self, team_ball_mapping=None, home_away_mapping=None, ball_identifier=None):

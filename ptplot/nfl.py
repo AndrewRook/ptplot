@@ -58,16 +58,18 @@ NFL_TEAMS = {
 }
 
 
+def _ball_marker_generator(figure: figure):
+    return partial(figure.circle, radius=1, line_width=2, fill_alpha=0.9, fill_color="brown", line_color="brown")
+    # return partial(
+    #     figure.ellipse, width=2, height=1, angle=0.0,
+    #     fill_color="brown", fill_alpha=0.9, line_color="brown"
+    # )
+
+
 class Aesthetics(_Aesthetics):
     team_color_mapping = NFL_TEAMS
     ball_colors = ["brown", "brown"]
-    @staticmethod
-    def ball_marker_generator(figure: figure):
-        return partial(figure.circle, radius=1, line_width=2, fill_alpha=0.9, fill_color="brown", line_color="brown")
-        # return partial(
-        #     figure.ellipse, width=2, height=1, angle=0.0,
-        #     fill_color="brown", fill_alpha=0.9, line_color="brown"
-        # )
+    ball_marker_generator = _ball_marker_generator
 
 
 class Field(Layer):
