@@ -62,9 +62,7 @@ class PTPlot:
         return layer_to_return
 
     def __add__(self, layer: Layer) -> PTPlot:
-        layer.__radd__(self)
         self.layers.append(layer)
-
         return self  # Allows method chaining
 
     def draw(self):

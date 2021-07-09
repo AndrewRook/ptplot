@@ -6,10 +6,10 @@ from dataclasses import dataclass
 import pandas as pd
 from bokeh.plotting import figure
 
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Sequence, Optional
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Mapping, Sequence, Optional, Tuple
 
 if TYPE_CHECKING:
-    from bokeh.models import GlyphRenderer
+    from bokeh.models import CustomJS, GlyphRenderer
     from ptplot import PTPlot
 
 
@@ -25,10 +25,9 @@ class Layer(ABC):
     def get_mappings(self) -> Sequence[str]:
         return []
 
-    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata):
-        pass
-
-    def __radd__(self, ptplot: PTPlot):
+    def draw(
+            self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
+    ) -> Optional[Sequence[Callable[[GlyphRenderer], Callable[[str, int], CustomJS]]]]:
         pass
 
 
@@ -37,12 +36,16 @@ class _Aesthetics(Layer):
     ball_colors: Sequence[str] = ("black", "black")
     ball_marker_generator: Optional[Callable[[figure], Callable[..., GlyphRenderer]]] = None
 
-    def __init__(self, team_ball_mapping=None, home_away_mapping=None, ball_identifier=None):
+    def __init__(
+            self, team_ball_mapping: Optional[str] = None,
+            home_away_mapping: Optional[str] = None,
+            ball_identifier: Optional[str] = None
+    ):
         self.team_ball_mapping = team_ball_mapping
         self.home_away_mapping = home_away_mapping
         self.ball_identifier = ball_identifier
 
-    def get_mappings(self):
+    def get_mappings(self) -> Sequence[str]:
         mappings = []
         if self.team_ball_mapping is not None:
             mappings.append(self.team_ball_mapping)
@@ -50,7 +53,7 @@ class _Aesthetics(Layer):
             mappings.append(self.home_away_mapping)
         return mappings
 
-    def map_aesthetics(self, data: pd.DataFrame):
+    def map_aesthetics(self, data: pd.DataFrame) -> Iterator[Tuple[pd.DataFrame, _Metadata]]:
         if self.team_ball_mapping is not None:
             team_ball_groups = data.groupby(self.team_ball_mapping)
             for team_ball_name, team_ball_data in team_ball_groups:
