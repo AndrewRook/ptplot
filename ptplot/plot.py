@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from bokeh.models import ColumnDataSource, CDSView, CustomJS, IndexFilter
-from typing import TYPE_CHECKING, Sequence, Optional
+from typing import TYPE_CHECKING, Any, Callable, Sequence, Optional
 
 from ptplot.callback import FIND_CURRENT_FRAME, FIND_ALL_FRAMES_UP_TO_CURRENT_FRAME
 from ptplot.core import Layer, _Metadata
@@ -27,7 +27,7 @@ class Tracks(Layer):
     def get_mappings(self) -> Sequence[str]:
         return [self.x, self.y, self.track_mapping]
 
-    def set_up_animation(self, graphics: GlyphRenderer):
+    def set_up_animation(self, graphics: GlyphRenderer) -> Callable[[str, Any], CustomJS]:
         source = graphics.data_source
         full_source = ColumnDataSource(source.data)
 
@@ -43,7 +43,9 @@ class Tracks(Layer):
 
         return animate
 
-    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata):
+    def draw(
+            self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
+    ) -> Optional[Sequence[Callable[[str, Any], CustomJS]]]:
 
         line_color = metadata.color_list[0] if metadata.is_home is True else metadata.color_list[1]
         groups = data.groupby(self.track_mapping)
@@ -92,7 +94,7 @@ class Positions(Layer):
             mappings += [self.number]
         return mappings
 
-    def set_up_animation(self, graphics: GlyphRenderer):
+    def set_up_animation(self, graphics: GlyphRenderer) -> Callable[[str, Any], CustomJS]:
         source = graphics.data_source
         view = graphics.view
 
@@ -104,7 +106,9 @@ class Positions(Layer):
 
         return animate
 
-    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata):
+    def draw(
+            self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
+    ) -> Optional[Sequence[Callable[[str, Any], CustomJS]]]:
 
         # If you have multiple frames but only want to show one (even in an animation):
         if self.frame_filter is not None:

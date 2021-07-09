@@ -7,52 +7,54 @@ import patsy
 from bokeh.plotting import figure
 from bokeh.layouts import Column, gridplot, row
 from bokeh.models import Slider, Toggle, CustomJS
-from typing import TYPE_CHECKING, Callable, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Iterator, List, Optional, Tuple, TypeVar, Type
 
 from ptplot.animation import Animation
 from ptplot.core import _Aesthetics
 from ptplot.facet import Facet
 
+
 if TYPE_CHECKING:
-    from bokeh.models import GlyphRenderer
+    from bokeh.models import CustomJS
     from ptplot.core import Layer
+    layer_type = TypeVar('layer_type', bound=Layer)
 
 
 class PTPlot:
-    def __init__(self, data: pd.DataFrame, pixel_height: Optional[int] = 400):
+    def __init__(self, data: pd.DataFrame, pixel_height: int = 400):
         self.data = data
         self.pixel_height = pixel_height
 
         self.layers: List[Layer] = []
 
     @property
-    def facet_layer(self):
+    def facet_layer(self) -> Facet:
         layer = self._get_class_instance_from_layers(Facet)
         if layer is None:
             try:
                 layer = self._layer
             except AttributeError:
                 class DummyFacet(Facet):
-                    def faceting(self, data):
+                    def faceting(self, data: pd.DataFrame) -> Iterator[Tuple[Any, pd.DataFrame]]:
                         self.num_col = 1
                         self.num_row = 1
-                        return [(None, data)]
+                        yield (None, data)
                 self._layer = DummyFacet("dummy")
                 layer = self._layer
         return layer
 
     @property
-    def aesthetics_layer(self):
+    def aesthetics_layer(self) -> _Aesthetics:
         layer = self._get_class_instance_from_layers(_Aesthetics)
         if layer is None:
             layer = _Aesthetics()
         return layer
 
     @property
-    def animation_layer(self):
+    def animation_layer(self) -> Optional[Animation]:
         return self._get_class_instance_from_layers(Animation)
 
-    def _get_class_instance_from_layers(self, class_name):
+    def _get_class_instance_from_layers(self, class_name: Type[layer_type]) -> Optional[layer_type]:
         layer_to_return = None
         for layer in self.layers:
             if isinstance(layer, class_name):
@@ -69,10 +71,10 @@ class PTPlot:
     def draw(self) -> Column:
 
         # Extract all mappings set by each layer, then prune duplicates
-        mappings = itertools.chain(*[layer.get_mappings() for layer in self.layers])
-        mappings = set(mappings)
+        all_mappings = itertools.chain(*[layer.get_mappings() for layer in self.layers])
+        unique_mappings = set(all_mappings)
         # make a dataframe where each mapping is a new column, named based on the mapping
-        mapping_data = pd.DataFrame({mapping: _apply_mapping(self.data, mapping) for mapping in mappings})
+        mapping_data = pd.DataFrame({mapping: _apply_mapping(self.data, mapping) for mapping in unique_mappings})
 
         # If animation, sort the data by the frame column
         if self.animation_layer is not None:
@@ -81,10 +83,14 @@ class PTPlot:
         facets = self.facet_layer.faceting(mapping_data)
 
         figures = []
-        animations: List[Callable[[GlyphRenderer], Callable[[str, int], CustomJS]]] = []
+        animations: List[Callable[[str, Any], CustomJS]] = []
         for (facet_name, facet_data) in facets:
+            # self.facet_layer.num_row should always be non-null at this point, but it
+            # appeases mypy
+            num_rows = self.facet_layer.num_row if self.facet_layer.num_row is not None else 1
+
             figure_object = figure(
-                sizing_mode="scale_both", height=int(self.pixel_height / self.facet_layer.num_row)
+                sizing_mode="scale_both", height=int(self.pixel_height / num_rows)
             )
             figure_object.x_range.range_padding = figure_object.y_range.range_padding = 0
             figure_object.x_range.bounds = figure_object.y_range.bounds = "auto"
