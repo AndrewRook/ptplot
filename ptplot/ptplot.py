@@ -5,15 +5,16 @@ import pandas as pd
 import patsy
 
 from bokeh.plotting import figure
-from bokeh.layouts import gridplot, row
+from bokeh.layouts import Column, gridplot, row
 from bokeh.models import Slider, Toggle, CustomJS
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Callable, List, Optional
 
 from ptplot.animation import Animation
 from ptplot.core import _Aesthetics
 from ptplot.facet import Facet
 
 if TYPE_CHECKING:
+    from bokeh.models import GlyphRenderer
     from ptplot.core import Layer
 
 
@@ -65,7 +66,7 @@ class PTPlot:
         self.layers.append(layer)
         return self  # Allows method chaining
 
-    def draw(self):
+    def draw(self) -> Column:
 
         # Extract all mappings set by each layer, then prune duplicates
         mappings = itertools.chain(*[layer.get_mappings() for layer in self.layers])
@@ -80,7 +81,7 @@ class PTPlot:
         facets = self.facet_layer.faceting(mapping_data)
 
         figures = []
-        animations = []
+        animations: List[Callable[[GlyphRenderer], Callable[[str, int], CustomJS]]] = []
         for (facet_name, facet_data) in facets:
             figure_object = figure(
                 sizing_mode="scale_both", height=int(self.pixel_height / self.facet_layer.num_row)
@@ -155,7 +156,7 @@ else {
 def _apply_mapping(
     data: pd.DataFrame,
     mapping: str,
-):
+) -> pd.Series:
     if mapping in data.columns:
         return data[mapping].copy(deep=True)
 

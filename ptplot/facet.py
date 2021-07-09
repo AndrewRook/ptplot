@@ -4,7 +4,10 @@ import math
 
 from .core import Layer
 
-from typing import Optional
+from typing import TYPE_CHECKING, Any, Iterator, Optional, Sequence, Tuple
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class Facet(Layer):
@@ -18,10 +21,10 @@ class Facet(Layer):
         if self.num_row is not None and self.num_col is not None:
             raise ValueError("Can only specify one of num_col or num_row")
 
-    def get_mappings(self):
+    def get_mappings(self) -> Sequence[str]:
         return [self.facet_mapping]
 
-    def faceting(self, data):
+    def faceting(self, data: pd.DataFrame) -> Iterator[Tuple[Any, pd.DataFrame]]:
         groups = data.groupby(self.facet_mapping)
         if self.num_col is not None:
             self.num_row = math.ceil(len(groups) / self.num_col)
