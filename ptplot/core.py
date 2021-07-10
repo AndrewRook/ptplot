@@ -60,7 +60,10 @@ class _Aesthetics(Layer):
                 if self.ball_identifier is not None and team_ball_name == self.ball_identifier:
                     yield team_ball_data, _Metadata(
                         label=team_ball_name, is_home=True,
-                        color_list=self.ball_colors, marker=self.ball_marker_generator
+                        # have to access the __func__ method directly to avoid needing to wrap all the
+                        # methods in staticmethod decorators
+                        # Also need to ignore mypy because it doesn't like doing that.
+                        color_list=self.ball_colors, marker=self.ball_marker_generator.__func__ # type: ignore
                     )
                 else:
                     team_color_list = self.team_color_mapping[team_ball_name]
