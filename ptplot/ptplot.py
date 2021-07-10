@@ -21,6 +21,16 @@ if TYPE_CHECKING:
 
 
 class PTPlot:
+    """The core plotting object, used as the base for all visualizations.
+
+    Once instantiated, Layers can be added to the plot using the "+" operator.
+
+    Parameters
+    ----------
+    data : The dataset you want to visualize
+    pixel_height : How tall the full visualization should be, in pixels. If facets are used this will
+    be the total height of all the facets.
+    """
     def __init__(self, data: pd.DataFrame, pixel_height: int = 400):
         self.data = data
         self.pixel_height = pixel_height
@@ -71,6 +81,14 @@ class PTPlot:
         return self  # Allows method chaining
 
     def draw(self) -> Column:
+        """
+        Build the visualization specified by all the added layers.
+
+        Returns
+        -------
+        The final visualization, which is a Bokeh object that can be rendered
+        via any of the common Bokeh methods (e.g. show())
+        """
 
         # Extract all mappings set by each layer, then prune duplicates
         all_mappings = itertools.chain(*[layer.get_mappings() for layer in self.layers])
