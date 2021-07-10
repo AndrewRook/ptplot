@@ -39,6 +39,8 @@ class PTPlot:
                         self.num_col = 1
                         self.num_row = 1
                         yield (None, data)
+                # Need to use this internal storage for the DummyFacet instance or else you re-instantiate
+                # every time you call this property *facepalm*
                 self._layer = DummyFacet("dummy")
                 layer = self._layer
         return layer

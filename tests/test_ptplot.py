@@ -2,8 +2,32 @@ import pandas as pd
 import pytest
 
 import ptplot.ptplot as pt
-from ptplot.animation import Animation
 from ptplot.core import Layer
+
+
+class TestFacetLayer:
+    def test_creates_single_facet_when_no_facet_specified(self):
+        plot = pt.PTPlot(pd.DataFrame())
+        facet_layer = plot.facet_layer
+        # Have to actually iterate the iterator to set num_row and num_col
+        next(facet_layer.faceting(pd.DataFrame()))
+        assert facet_layer.num_row == 1
+        assert facet_layer.num_col == 1
+
+    def test_does_not_recreate_dummy_facet_when_called_multiple_times(self):
+        plot = pt.PTPlot(pd.DataFrame())
+        facet_layer = plot.facet_layer
+        facet_layer.random_attribute = 100
+        second_facet_layer = plot.facet_layer
+        assert hasattr(second_facet_layer, "random_attribute")
+        assert second_facet_layer.random_attribute == 100
+
+
+class TestAestheticsLayer:
+    def test_creates_empty_layer_when_no_aesthetics_specified(self):
+        plot = pt.PTPlot(pd.DataFrame())
+        aesthetics_layer = plot.aesthetics_layer
+        assert aesthetics_layer.team_color_mapping == {}
 
 
 class TestInternalGetClassInstanceFromLayers:
