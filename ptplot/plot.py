@@ -31,7 +31,7 @@ class Tracks(Layer):
         source = graphics.data_source
         full_source = ColumnDataSource(source.data)
 
-        def animate(frame_column, initial_frame):
+        def animate(frame_column: str, initial_frame: Any) -> CustomJS:
             is_in_initial_frame = source.data[frame_column] <= initial_frame
             initial_data = {column: source.data[column][is_in_initial_frame] for column in source.data}
             source.data = initial_data
@@ -98,7 +98,7 @@ class Positions(Layer):
         source = graphics.data_source
         view = graphics.view
 
-        def animate(frame_column, initial_frame):
+        def animate(frame_column: str, initial_frame: Any) -> CustomJS:
             initial_indices = np.flatnonzero(source.data[frame_column] == initial_frame)
             view.filters[0].indices = initial_indices
             callback = CustomJS(args={"source": source, "view": view, "frame_column": frame_column}, code=self.callback)

@@ -10,12 +10,13 @@ import warnings
 from functools import partial
 
 from ptplot.core import Layer, _Aesthetics, _Metadata
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Sequence
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 if TYPE_CHECKING:
+    from bokeh.models import GlyphRenderer
     from bokeh.plotting import figure
     from .ptplot import PTPlot
 
@@ -58,7 +59,7 @@ NFL_TEAMS = {
 }
 
 
-def _ball_marker_generator(figure: figure):
+def _ball_marker_generator(figure: figure) -> Callable[[figure], Callable[..., GlyphRenderer]]:
     return partial(figure.circle, radius=1, line_width=2, fill_alpha=0.9, fill_color="brown", line_color="brown")
     # return partial(
     #     figure.ellipse, width=2, height=1, angle=0.0,
@@ -94,10 +95,12 @@ class Field(Layer):
             warnings.warn("Using pixels_per_yard < 10 results in poor image quality an is not recommended")
         self.pixels_per_yard = pixels_per_yard
 
-    def get_mappings(self):
+    def get_mappings(self) -> Sequence[str]:
         return []
 
-    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata):
+    def draw(
+            self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
+    ) -> None:
 
         field_width_yards = 53.3
         y_min = 0 - self.sideline_buffer
@@ -180,11 +183,13 @@ class Field(Layer):
         bokeh_figure.y_range.start = y_min
         bokeh_figure.y_range.end = y_max
 
+        return None
+
 
 def _get_vertical_line_locations(
     min_yards: float,
     max_yards: float,
     yard_modulus: int,
-):
+) -> Sequence[int]:
     vlines = [yard for yard in range(math.ceil(min_yards), math.floor(max_yards) + 1) if yard % yard_modulus == 0]
     return vlines

@@ -27,7 +27,7 @@ class Layer(ABC):
 
     def draw(
             self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
-    ) ->  Optional[Sequence[Callable[[str, Any], CustomJS]]]:
+    ) -> Optional[Sequence[Callable[[str, Any], CustomJS]]]:
         pass
 
 
