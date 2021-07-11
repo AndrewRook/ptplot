@@ -67,12 +67,35 @@ def _ball_marker_generator(figure: figure) -> Callable[[figure], Callable[..., G
 
 
 class Aesthetics(_Aesthetics):
+    """
+    Team colors and ball colors/marker for the NFL.
+    """
     team_color_mapping = NFL_TEAMS
     ball_colors = ["brown", "brown"]
     ball_marker_generator = _ball_marker_generator
 
 
 class Field(Layer):
+    """Generate an NFL field.
+
+    The field is created by first making a pixel image with matplotlib, then loading
+    the rgba array into Bokeh. This is less-than-ideal but was the easiest way to make
+    the numerals that need to be on the field in such a way that they appropriately zoom.
+
+    Parameters
+    ----------
+    vertical_orientation : If True, the long axis of the field will be the y-axis.
+    min_yardline : The minimum yardline to use. Note that the default will cover the whole
+        left/bottom endzone with a three-yard buffer.
+    max_yardline : The maximum yardline to use. Note that the default will cover the whole
+        right/top endzone with a three-yard buffer.
+    relative_yardlines : If True, then the yardlines will be centered around zero rather than
+        representing real positions on the field. This can be useful for plotting multiple
+        plays on top of each other.
+    sideline_buffer : How many yards of extra space to provide on each sideline.
+    pixels_per_yard : The resolution of the image to generate. Larger numbers are higher resolution,
+        but may lead to larger file sizes and longer load times.
+    """
     def __init__(
         self,
         vertical_orientation: bool = False,

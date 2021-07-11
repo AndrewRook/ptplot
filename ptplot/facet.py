@@ -11,6 +11,16 @@ if TYPE_CHECKING:
 
 
 class Facet(Layer):
+    """Break a dataset into multiple subplots ("facets").
+
+    Note that you can't have more than one Facet on a visualization.
+
+    Parameters
+    ----------
+    facet_mapping : The mapping to use to split the dataset into facets.
+    num_col, num_row : The number of columns/rows to split the dataset into. Only
+       one of the two variables should be defined.
+    """
     def __init__(
             self, facet_mapping: str,
             num_col: Optional[int] = None, num_row: Optional[int] = None

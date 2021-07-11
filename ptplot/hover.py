@@ -16,6 +16,23 @@ if TYPE_CHECKING:
 
 
 class Hover(Layer):
+    """Add a hoverlabel to the visualization. Hoverlabels will appear as mouseover
+    events. While they are usually used for simply identifying data points, they can be almost arbitrarily
+    complex. See https://docs.bokeh.org/en/latest/docs/user_guide/tools.html#hovertool
+    for details (and inspiration!).
+
+    Note that, conceptually, multiple Hover layers can be used in the same visualization; however this has not
+    been thoroughly tested so unexpected behavior may occur.
+
+    Parameters
+    ----------
+    tooltip_specification : The definition for the tooltip display. It can be anything that can be passed
+        as the tooltips argument to Bokeh's HoverTool.
+    plot_name : The name you assigned to the specific plotting layer that you wish the hoverlabel to be attached to
+        (ie what glyphs you want the label to pop up on when moused over).
+    tooltip_mappings : The mappings for any columns that you want to use in the tooltips (unfortunately it is
+        not yet possible to pull those mappings directly from the tooltip_specification input).
+    """
     def __init__(
             self,
             tooltip_specification: Union[str, List[Tuple[str, str]]],
