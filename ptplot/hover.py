@@ -33,11 +33,13 @@ class Hover(Layer):
     tooltip_mappings : The mappings for any columns that you want to use in the tooltips (unfortunately it is
         not yet possible to pull those mappings directly from the tooltip_specification input).
     """
+
     def __init__(
-            self,
-            tooltip_specification: Union[str, List[Tuple[str, str]]],
-            plot_name: str,
-            tooltip_mappings: Optional[Sequence[str]] = None):
+        self,
+        tooltip_specification: Union[str, List[Tuple[str, str]]],
+        plot_name: str,
+        tooltip_mappings: Optional[Sequence[str]] = None,
+    ):
         self.plot_name = plot_name
         self.tooltip_specification = tooltip_specification
         self.tool = HoverTool(names=[plot_name], tooltips=self.tooltip_specification)
@@ -46,8 +48,6 @@ class Hover(Layer):
     def get_mappings(self) -> Sequence[str]:
         return self.tooltip_mappings
 
-    def draw(
-            self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
-    ) -> None:
+    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata) -> None:
         bokeh_figure.add_tools(self.tool)
         return None

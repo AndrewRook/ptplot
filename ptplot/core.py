@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
 
 import pandas as pd
@@ -26,7 +26,7 @@ class Layer(ABC):
         return []
 
     def draw(
-            self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
+        self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
     ) -> Optional[Sequence[Callable[[str, Any], CustomJS]]]:
         pass
 
@@ -37,9 +37,10 @@ class _Aesthetics(Layer):
     ball_marker_generator: Optional[Callable[[figure], Callable[..., GlyphRenderer]]] = None
 
     def __init__(
-            self, team_ball_mapping: Optional[str] = None,
-            home_away_mapping: Optional[str] = None,
-            ball_identifier: Optional[str] = None
+        self,
+        team_ball_mapping: Optional[str] = None,
+        home_away_mapping: Optional[str] = None,
+        ball_identifier: Optional[str] = None,
     ):
         self.team_ball_mapping = team_ball_mapping
         self.home_away_mapping = home_away_mapping
@@ -59,11 +60,13 @@ class _Aesthetics(Layer):
             for team_ball_name, team_ball_data in team_ball_groups:
                 if self.ball_identifier is not None and team_ball_name == self.ball_identifier:
                     yield team_ball_data, _Metadata(
-                        label=team_ball_name, is_home=True,
+                        label=team_ball_name,
+                        is_home=True,
                         # have to access the __func__ method directly to avoid needing to wrap all the
                         # methods in staticmethod decorators
                         # Also need to ignore mypy because it doesn't like doing that.
-                        color_list=self.ball_colors, marker=self.ball_marker_generator.__func__ # type: ignore
+                        color_list=self.ball_colors,
+                        marker=self.ball_marker_generator.__func__,  # type: ignore
                     )
                 else:
                     team_color_list = self.team_color_mapping[team_ball_name]
@@ -74,9 +77,7 @@ class _Aesthetics(Layer):
                                 label=team_ball_name, is_home=is_home, color_list=team_color_list
                             )
                     else:
-                        yield team_ball_data, _Metadata(
-                            label=team_ball_name, is_home=True, color_list=team_color_list
-                        )
+                        yield team_ball_data, _Metadata(label=team_ball_name, is_home=True, color_list=team_color_list)
         else:
             if self.home_away_mapping is not None:
                 home_away_groups = data.groupby(self.home_away_mapping)
@@ -84,5 +85,3 @@ class _Aesthetics(Layer):
                     yield home_away_data, _Metadata(is_home=is_home)
             else:
                 yield data, _Metadata()
-
-

@@ -21,10 +21,8 @@ class Facet(Layer):
     num_col, num_row : The number of columns/rows to split the dataset into. Only
        one of the two variables should be defined.
     """
-    def __init__(
-            self, facet_mapping: str,
-            num_col: Optional[int] = None, num_row: Optional[int] = None
-    ):
+
+    def __init__(self, facet_mapping: str, num_col: Optional[int] = None, num_row: Optional[int] = None):
         self.facet_mapping = facet_mapping
         self.num_col = num_col
         self.num_row = num_row

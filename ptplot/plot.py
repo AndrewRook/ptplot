@@ -33,6 +33,7 @@ class Tracks(Layer):
     name : If you plan on using the Hover layer, provide a name for the layer in order to assign hoverlabels
         to the glyphs drawn by this layer.
     """
+
     def __init__(self, x: str, y: str, track_mapping: str, animate: bool = True, name: Optional[str] = None):
         self.x = x
         self.y = y
@@ -61,7 +62,7 @@ class Tracks(Layer):
         return animate
 
     def draw(
-            self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
+        self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
     ) -> Optional[Sequence[Callable[[str, Any], CustomJS]]]:
 
         line_color = metadata.color_list[0] if metadata.is_home is True else metadata.color_list[1]
@@ -78,7 +79,7 @@ class Tracks(Layer):
                 line_width=2,
                 muted_alpha=0.3,
                 legend_label=metadata.label,
-                name=self.name
+                name=self.name,
             )
             all_graphics.append(graphics)
 
@@ -112,10 +113,15 @@ class Positions(Layer):
     name : If you plan on using the Hover layer, provide a name for the layer in order to assign hoverlabels
         to the glyphs drawn by this layer.
     """
+
     def __init__(
-        self, x: str, y: str, number: Optional[str] = None,
-        frame_filter: Optional[str] = None, marker_radius: float = 1,
-        name: Optional[str] = None
+        self,
+        x: str,
+        y: str,
+        number: Optional[str] = None,
+        frame_filter: Optional[str] = None,
+        marker_radius: float = 1,
+        name: Optional[str] = None,
     ):
         self.x = x
         self.y = y
@@ -147,7 +153,7 @@ class Positions(Layer):
         return animate
 
     def draw(
-            self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
+        self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
     ) -> Optional[Sequence[Callable[[str, Any], CustomJS]]]:
 
         # If you have multiple frames but only want to show one (even in an animation):
@@ -159,8 +165,13 @@ class Positions(Layer):
 
         if metadata.marker is not None:
             graphics = metadata.marker(bokeh_figure)(
-                x=self.x, y=self.y, source=source, view=view, muted_alpha=0.3, legend_label=metadata.label,
-                name=self.name
+                x=self.x,
+                y=self.y,
+                source=source,
+                view=view,
+                muted_alpha=0.3,
+                legend_label=metadata.label,
+                name=self.name,
             )
         else:
             fill_color, line_color = (
@@ -177,7 +188,7 @@ class Positions(Layer):
                 line_width=2,
                 muted_alpha=0.3,
                 legend_label=metadata.label,
-                name=self.name
+                name=self.name,
             )
 
         if self.number is not None:

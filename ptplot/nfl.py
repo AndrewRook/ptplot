@@ -60,16 +60,14 @@ NFL_TEAMS = {
 
 
 def _ball_marker_generator(figure: figure) -> Callable[[figure], Callable[..., GlyphRenderer]]:
-    return partial(
-        figure.ellipse, width=2, height=1, angle=0.0,
-        fill_color="brown", fill_alpha=0.9, line_color="brown"
-    )
+    return partial(figure.ellipse, width=2, height=1, angle=0.0, fill_color="brown", fill_alpha=0.9, line_color="brown")
 
 
 class Aesthetics(_Aesthetics):
     """
     Team colors and ball colors/marker for the NFL.
     """
+
     team_color_mapping = NFL_TEAMS
     ball_colors = ["brown", "brown"]
     ball_marker_generator = _ball_marker_generator
@@ -96,6 +94,7 @@ class Field(Layer):
     pixels_per_yard : The resolution of the image to generate. Larger numbers are higher resolution,
         but may lead to larger file sizes and longer load times.
     """
+
     def __init__(
         self,
         vertical_orientation: bool = False,
@@ -120,9 +119,7 @@ class Field(Layer):
     def get_mappings(self) -> Sequence[str]:
         return []
 
-    def draw(
-            self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
-    ) -> None:
+    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata) -> None:
 
         field_width_yards = 53.3
         y_min = 0 - self.sideline_buffer

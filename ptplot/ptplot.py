@@ -17,7 +17,8 @@ from ptplot.facet import Facet
 if TYPE_CHECKING:
     from bokeh.models import CustomJS
     from ptplot.core import Layer
-    layer_type = TypeVar('layer_type', bound=Layer)
+
+    layer_type = TypeVar("layer_type", bound=Layer)
 
 
 class PTPlot:
@@ -29,8 +30,9 @@ class PTPlot:
     ----------
     data : The dataset you want to visualize
     pixel_height : How tall the full visualization should be, in pixels. If facets are used this will
-    be the total height of all the facets.
+    be the total height of all the facets combined.
     """
+
     def __init__(self, data: pd.DataFrame, pixel_height: int = 400):
         self.data = data
         self.pixel_height = pixel_height
@@ -44,11 +46,13 @@ class PTPlot:
             try:
                 layer = self._layer
             except AttributeError:
+
                 class DummyFacet(Facet):
                     def faceting(self, data: pd.DataFrame) -> Iterator[Tuple[Any, pd.DataFrame]]:
                         self.num_col = 1
                         self.num_row = 1
                         yield (None, data)
+
                 # Need to use this internal storage for the DummyFacet instance or else you re-instantiate
                 # every time you call this property *facepalm*
                 self._layer = DummyFacet("dummy")
@@ -109,9 +113,7 @@ class PTPlot:
             # appeases mypy
             num_rows = self.facet_layer.num_row if self.facet_layer.num_row is not None else 1
 
-            figure_object = figure(
-                sizing_mode="scale_both", height=int(self.pixel_height / num_rows)
-            )
+            figure_object = figure(sizing_mode="scale_both", height=int(self.pixel_height / num_rows))
             figure_object.x_range.range_padding = figure_object.y_range.range_padding = 0
             figure_object.x_range.bounds = figure_object.y_range.bounds = "auto"
             figure_object.xgrid.visible = False
@@ -136,7 +138,7 @@ class PTPlot:
             widgets.append(play_pause)
             slider = Slider(start=min_frame, end=max_frame, value=min_frame, step=1, title="Frame")
             play_pause_js = CustomJS(
-                args={"slider": slider, "min_frame": min_frame,"max_frame": max_frame},
+                args={"slider": slider, "min_frame": min_frame, "max_frame": max_frame},
                 code="""
 var check_and_iterate = function(){
     var slider_val = slider.value;
@@ -166,9 +168,9 @@ else {
     cb_obj.label = '❚❚ Pause';
     var play_pause_loop = setInterval(check_and_iterate, 100);
 };
-                """
+                """,
             )
-            play_pause.js_on_change('active', play_pause_js)
+            play_pause.js_on_change("active", play_pause_js)
             widgets.append(slider)
             for animation in animations:
                 callback = animation(self.animation_layer.frame_mapping, min_frame)
