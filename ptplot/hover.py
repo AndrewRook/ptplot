@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from bokeh.models import HoverTool
 
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple, Union
 
 from .core import Layer
 
@@ -11,7 +11,6 @@ if TYPE_CHECKING:
     from ptplot import PTPlot
     import pandas as pd
     from bokeh.plotting import figure
-    from bokeh.models import CustomJS
     from .core import _Metadata
 
 

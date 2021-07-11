@@ -15,7 +15,6 @@ from ptplot.facet import Facet
 
 
 if TYPE_CHECKING:
-    from bokeh.models import CustomJS
     from ptplot.core import Layer
 
     layer_type = TypeVar("layer_type", bound=Layer)
@@ -146,7 +145,7 @@ var check_and_iterate = function(){
     if(toggle_val == false) {
         cb_obj.label = '► Play';
         clearInterval(play_pause_loop);
-        } 
+        }
     else if(slider_val == max_frame) {
         cb_obj.label = '► Play';
         slider.value = min_frame;
