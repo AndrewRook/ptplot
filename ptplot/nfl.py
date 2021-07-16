@@ -60,7 +60,7 @@ NFL_TEAMS = {
 
 
 def _ball_marker_generator(figure: figure) -> Callable[[figure], Callable[..., GlyphRenderer]]:
-    return partial(figure.ellipse, width=2, height=1, angle=0.0, fill_color="brown", fill_alpha=0.9, line_color="brown")
+    return partial(figure.ellipse, width=2, height=1, angle=0.0, fill_color="brown", line_color="brown")
 
 
 class Aesthetics(_Aesthetics):
@@ -93,6 +93,7 @@ class Field(Layer):
     sideline_buffer : How many yards of extra space to provide on each sideline.
     pixels_per_yard : The resolution of the image to generate. Larger numbers are higher resolution,
         but may lead to larger file sizes and longer load times.
+    kwargs : Any keyword arguments to bokeh.plotting.image_rgba OTHER THAN image, x, y, dw, dh, or level
     """
 
     def __init__(
@@ -103,9 +104,10 @@ class Field(Layer):
         relative_yardlines: bool = False,
         sideline_buffer: float = 3,
         pixels_per_yard: int = 20,
+        **kwargs
     ):
-        if vertical_orientation:
-            raise NotImplementedError("Don't have that yet")
+        # if vertical_orientation:
+        #     raise NotImplementedError("Don't have that yet")
 
         self.vertical_orientation = vertical_orientation
         self.min_yardline = min_yardline
@@ -115,6 +117,7 @@ class Field(Layer):
         if pixels_per_yard < 10:
             warnings.warn("Using pixels_per_yard < 10 results in poor image quality an is not recommended")
         self.pixels_per_yard = pixels_per_yard
+        self.kwargs = kwargs
 
     def get_mappings(self) -> Sequence[str]:
         return []
@@ -186,21 +189,39 @@ class Field(Layer):
         field_view[:, :, 0] = field[::-1, :, 0]
         field_view[:, :, 1] = field[::-1, :, 1]
         field_view[:, :, 2] = field[::-1, :, 2]
-        field_view[:, :, 3] = 200
+        field_view[:, :, 3] = 255
 
-        bokeh_figure.image_rgba(image=[img], x=self.min_yardline, y=y_min, dw=x_yards, dh=y_yards, level="image")
+        if self.vertical_orientation:
+            bokeh_figure.image_rgba(
+                image=[np.flip(img.T, axis=1)], y=self.min_yardline, x=y_min, dh=x_yards, dw=y_yards, level="image",
+                **self.kwargs
+            )
+        else:
+            bokeh_figure.image_rgba(
+                image=[img], x=self.min_yardline, y=y_min, dw=x_yards, dh=y_yards, level="image",
+                **self.kwargs
+            )
 
         # Have to manually set the width here because I can't figure out how to make bokeh scale
         # to it automatically :(
-        bokeh_figure.width = int(round(bokeh_figure.height * x_yards / y_yards))
+        if self.vertical_orientation:
+            bokeh_figure.width = int(round(bokeh_figure.height * y_yards / x_yards))
+        else:
+            bokeh_figure.width = int(round(bokeh_figure.height * x_yards / y_yards))
 
         # For some reason you have to manually specify the range bounds here in order to be able
         # access them downstream (apparently otherwise they're only computed in the JS, see
         # https://stackoverflow.com/a/50735228/1373664
-        bokeh_figure.x_range.start = self.min_yardline
-        bokeh_figure.x_range.end = self.max_yardline
-        bokeh_figure.y_range.start = y_min
-        bokeh_figure.y_range.end = y_max
+        if self.vertical_orientation:
+            bokeh_figure.y_range.start = self.min_yardline
+            bokeh_figure.y_range.end = self.max_yardline
+            bokeh_figure.x_range.start = y_min
+            bokeh_figure.x_range.end = y_max
+        else:
+            bokeh_figure.x_range.start = self.min_yardline
+            bokeh_figure.x_range.end = self.max_yardline
+            bokeh_figure.y_range.start = y_min
+            bokeh_figure.y_range.end = y_max
 
         return None
 

@@ -32,15 +32,20 @@ class Tracks(Layer):
         full tracks even if an Animation layer is provided.
     name : If you plan on using the Hover layer, provide a name for the layer in order to assign hoverlabels
         to the glyphs drawn by this layer.
+    kwargs : Any additional keyword arguments to bokeh.figure.lines.
     """
 
-    def __init__(self, x: str, y: str, track_mapping: str, animate: bool = True, name: Optional[str] = None):
+    def __init__(
+            self, x: str, y: str, track_mapping: str, animate: bool = True, name: Optional[str] = None,
+            **kwargs
+    ):
         self.x = x
         self.y = y
         self.track_mapping = track_mapping
         self.animate = animate
         self.callback = FIND_ALL_FRAMES_UP_TO_CURRENT_FRAME
         self.name = name
+        self.kwargs = kwargs
 
     def get_mappings(self) -> Sequence[str]:
         return [self.x, self.y, self.track_mapping]
@@ -76,10 +81,9 @@ class Tracks(Layer):
                 y=self.y,
                 source=source,
                 line_color=line_color,
-                line_width=2,
-                muted_alpha=0.3,
                 legend_label=metadata.label,
                 name=self.name,
+                **self.kwargs
             )
             all_graphics.append(graphics)
 
@@ -112,16 +116,19 @@ class Positions(Layer):
         marker.
     name : If you plan on using the Hover layer, provide a name for the layer in order to assign hoverlabels
         to the glyphs drawn by this layer.
+    kwargs : Any additional keyword arguments to the glyph renderer for the markers. Note that these do not
+        apply to any text on top of the markers
     """
 
     def __init__(
-        self,
-        x: str,
-        y: str,
-        number: Optional[str] = None,
-        frame_filter: Optional[str] = None,
-        marker_radius: float = 1,
-        name: Optional[str] = None,
+            self,
+            x: str,
+            y: str,
+            number: Optional[str] = None,
+            frame_filter: Optional[str] = None,
+            marker_radius: float = 1,
+            name: Optional[str] = None,
+            **kwargs
     ):
         self.x = x
         self.y = y
@@ -130,6 +137,7 @@ class Positions(Layer):
         self.callback = FIND_CURRENT_FRAME
         self.marker_radius = marker_radius
         self.name = name
+        self.kwargs = kwargs
 
     def get_mappings(self) -> Sequence[str]:
         mappings = [self.x, self.y]
@@ -172,6 +180,7 @@ class Positions(Layer):
                 muted_alpha=0.3,
                 legend_label=metadata.label,
                 name=self.name,
+                **self.kwargs
             )
         else:
             fill_color, line_color = (
@@ -185,10 +194,9 @@ class Positions(Layer):
                 fill_color=fill_color,
                 line_color=line_color,
                 radius=self.marker_radius,
-                line_width=2,
-                muted_alpha=0.3,
                 legend_label=metadata.label,
                 name=self.name,
+                **self.kwargs
             )
 
         if self.number is not None:
