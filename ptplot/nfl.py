@@ -130,14 +130,17 @@ class Field(Layer):
         x_yards = self.max_yardline - self.min_yardline
         y_yards = y_max - y_min
 
-        fig, ax = plt.subplots(figsize=(x_yards, y_yards), dpi=self.pixels_per_yard, tight_layout={"pad": 0})
-        ax.set_facecolor("green")
-        ax.set_axis_off()
-        ax.add_artist(ax.patch)
-        ax.patch.set_zorder(-1)
-        ax.set_xlim(self.min_yardline, self.max_yardline)
-        ax.set_ylim(y_min, y_max)
+        bokeh_figure.background_fill_color="green"
 
+        #
+        # fig, ax = plt.subplots(figsize=(x_yards, y_yards), dpi=self.pixels_per_yard, tight_layout={"pad": 0})
+        # ax.set_facecolor("green")
+        # ax.set_axis_off()
+        # ax.add_artist(ax.patch)
+        # ax.patch.set_zorder(-1)
+        # ax.set_xlim(self.min_yardline, self.max_yardline)
+        # ax.set_ylim(y_min, y_max)
+        #
         # Set up field lines
         yardlines = _get_vertical_line_locations(
             # If relative, just use max/min
@@ -146,61 +149,78 @@ class Field(Layer):
             min(self.max_yardline, 100 if not self.relative_yardlines else self.max_yardline),
             5,
         )
-        ax.vlines(yardlines, 0, field_width_yards, color="white", lw=20)
+        bokeh_figure.rect(
+            yardlines, [field_width_yards / 2] * len(yardlines),
+            width=0.3,
+            height=field_width_yards,
+            fill_color="white",
+            line_width=0,
+            level="image"
+        )
         if not self.relative_yardlines:
             endzone_yardlines = [yard for yard in [-10, 110] if yard > self.min_yardline and yard < self.max_yardline]
-            ax.vlines(endzone_yardlines, 0, field_width_yards, color="white", lw=40)
-
+            bokeh_figure.rect(
+                endzone_yardlines, [field_width_yards / 2] * len(endzone_yardlines),
+                width=0.6,
+                height=field_width_yards,
+                fill_color="white",
+                line_width=0,
+                level="image"
+            )
         if self.sideline_buffer > 0:
-            ax.hlines(
+            lines_start = max(-10.2, self.min_yardline)
+            lines_end = min(110.2, self.max_yardline)
+            bokeh_figure.rect(
+                [(lines_end + lines_start) / 2] * 2,
                 [0, field_width_yards],
-                max(-10.2, self.min_yardline),
-                min(110.2, self.max_yardline),
-                color="white",
-                lw=40,
+                height=0.6,
+                width=lines_end - lines_start,
+                fill_color="white",
+                line_width=0,
+                level="image"
             )
-
-        # Set up numbers
-        number_yardlines = _get_vertical_line_locations(
-            # If relative, just use max/min
-            # If absolute, use max/min but not past the 10s
-            max(self.min_yardline, 10 if not self.relative_yardlines else self.min_yardline),
-            min(self.max_yardline, 90 if not self.relative_yardlines else self.max_yardline),
-            10,
-        )
-
-        number_options = {"fontsize": 150, "color": "white", "weight": "bold", "ha": "center", "va": "center"}
-        for yardline in number_yardlines:
-            number = yardline if self.relative_yardlines else 50 - abs(50 - yardline)
-            string_marker = str(number)
-            string_marker = (
-                f" \u200a{string_marker}" if len(string_marker) == 1 else f"{string_marker[0]}\u200a{string_marker[1]}"
-            )
-            ax.text(yardline, 3, string_marker, **number_options)
-            ax.text(yardline, 50, string_marker, **number_options, rotation=180)
-
-        # Convert the plot to a numpy array, which can then be added to bokeh as a static image
-        fig.canvas.draw()
-        field = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        field = field.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-        plt.close(fig)
-        img = np.empty(field.shape[:2], dtype=np.uint32)
-        field_view = img.view(dtype=np.uint8).reshape((field.shape[0], field.shape[1], 4))
-        field_view[:, :, 0] = field[::-1, :, 0]
-        field_view[:, :, 1] = field[::-1, :, 1]
-        field_view[:, :, 2] = field[::-1, :, 2]
-        field_view[:, :, 3] = 255
-
-        if self.vertical_orientation:
-            bokeh_figure.image_rgba(
-                image=[np.flip(img.T, axis=1)], y=self.min_yardline, x=y_min, dh=x_yards, dw=y_yards, level="image",
-                **self.kwargs
-            )
-        else:
-            bokeh_figure.image_rgba(
-                image=[img], x=self.min_yardline, y=y_min, dw=x_yards, dh=y_yards, level="image",
-                **self.kwargs
-            )
+        #
+        # # Set up numbers
+        # number_yardlines = _get_vertical_line_locations(
+        #     # If relative, just use max/min
+        #     # If absolute, use max/min but not past the 10s
+        #     max(self.min_yardline, 10 if not self.relative_yardlines else self.min_yardline),
+        #     min(self.max_yardline, 90 if not self.relative_yardlines else self.max_yardline),
+        #     10,
+        # )
+        #
+        # number_options = {"fontsize": 150, "color": "white", "weight": "bold", "ha": "center", "va": "center"}
+        # for yardline in number_yardlines:
+        #     number = yardline if self.relative_yardlines else 50 - abs(50 - yardline)
+        #     string_marker = str(number)
+        #     string_marker = (
+        #         f" \u200a{string_marker}" if len(string_marker) == 1 else f"{string_marker[0]}\u200a{string_marker[1]}"
+        #     )
+        #     ax.text(yardline, 3, string_marker, **number_options)
+        #     ax.text(yardline, 50, string_marker, **number_options, rotation=180)
+        #
+        # # Convert the plot to a numpy array, which can then be added to bokeh as a static image
+        # fig.canvas.draw()
+        # field = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+        # field = field.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+        # plt.close(fig)
+        # img = np.empty(field.shape[:2], dtype=np.uint32)
+        # field_view = img.view(dtype=np.uint8).reshape((field.shape[0], field.shape[1], 4))
+        # field_view[:, :, 0] = field[::-1, :, 0]
+        # field_view[:, :, 1] = field[::-1, :, 1]
+        # field_view[:, :, 2] = field[::-1, :, 2]
+        # field_view[:, :, 3] = 255
+        #
+        # if self.vertical_orientation:
+        #     bokeh_figure.image_rgba(
+        #         image=[np.flip(img.T, axis=1)], y=self.min_yardline, x=y_min, dh=x_yards, dw=y_yards, level="image",
+        #         **self.kwargs
+        #     )
+        # else:
+        #     bokeh_figure.image_rgba(
+        #         image=[img], x=self.min_yardline, y=y_min, dw=x_yards, dh=y_yards, level="image",
+        #         **self.kwargs
+        #     )
 
         # Have to manually set the width here because I can't figure out how to make bokeh scale
         # to it automatically :(
