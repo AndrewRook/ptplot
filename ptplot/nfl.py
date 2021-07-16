@@ -76,10 +76,6 @@ class Aesthetics(_Aesthetics):
 class Field(Layer):
     """Generate an NFL field.
 
-    The field is created by first making a pixel image with matplotlib, then loading
-    the rgba array into Bokeh. This is less-than-ideal but was the easiest way to make
-    the numerals that need to be on the field in such a way that they appropriately zoom.
-
     Parameters
     ----------
     vertical_orientation : If True, the long axis of the field will be the y-axis.
@@ -91,8 +87,6 @@ class Field(Layer):
         representing real positions on the field. This can be useful for plotting multiple
         plays on top of each other.
     sideline_buffer : How many yards of extra space to provide on each sideline.
-    pixels_per_yard : The resolution of the image to generate. Larger numbers are higher resolution,
-        but may lead to larger file sizes and longer load times.
     kwargs : Any keyword arguments to bokeh.plotting.image_rgba OTHER THAN image, x, y, dw, dh, or level
     """
 
@@ -103,7 +97,6 @@ class Field(Layer):
         max_yardline: float = 113,
         relative_yardlines: bool = False,
         sideline_buffer: float = 3,
-        pixels_per_yard: int = 20,
         **kwargs
     ):
         if vertical_orientation:
@@ -114,9 +107,6 @@ class Field(Layer):
         self.max_yardline = max_yardline
         self.relative_yardlines = relative_yardlines
         self.sideline_buffer = sideline_buffer
-        if pixels_per_yard < 10:
-            warnings.warn("Using pixels_per_yard < 10 results in poor image quality an is not recommended")
-        self.pixels_per_yard = pixels_per_yard
         self.kwargs = kwargs
 
     def get_mappings(self) -> Sequence[str]:
@@ -221,6 +211,7 @@ class Field(Layer):
             text_baseline="middle",
             text_color="white",
             text_font_size=f"{font_size:.2f}px",
+            level="image"
         )
         bokeh_figure.text(
             number_yardlines, 50,
@@ -230,6 +221,7 @@ class Field(Layer):
             text_baseline="middle",
             text_color="white",
             text_font_size=f"{font_size:.2f}px",
+            level="image"
         )
 
         return None
