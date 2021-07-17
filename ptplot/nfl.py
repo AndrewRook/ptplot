@@ -123,7 +123,7 @@ class Field(Layer):
         pixels_per_data_unit = bokeh_figure.height / abs(bokeh_figure.y_range.end - bokeh_figure.y_range.start)
         font_size = pixels_per_data_unit * 3
 
-        bokeh_figure.background_fill_color = "green"
+        bokeh_figure.background_fill_color = "#34aa62"
 
         # Set up field lines
         yardlines = _get_vertical_line_locations(
