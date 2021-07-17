@@ -36,8 +36,7 @@ class Tracks(Layer):
     """
 
     def __init__(
-            self, x: str, y: str, track_mapping: str, animate: bool = True, name: Optional[str] = None,
-            **kwargs
+        self, x: str, y: str, track_mapping: str, animate: bool = True, name: Optional[str] = None, **kwargs: Any
     ):
         self.x = x
         self.y = y
@@ -83,7 +82,7 @@ class Tracks(Layer):
                 line_color=line_color,
                 legend_label=metadata.label,
                 name=self.name,
-                **self.kwargs
+                **self.kwargs,
             )
             all_graphics.append(graphics)
 
@@ -121,14 +120,14 @@ class Positions(Layer):
     """
 
     def __init__(
-            self,
-            x: str,
-            y: str,
-            number: Optional[str] = None,
-            frame_filter: Optional[str] = None,
-            marker_radius: float = 1,
-            name: Optional[str] = None,
-            **kwargs
+        self,
+        x: str,
+        y: str,
+        number: Optional[str] = None,
+        frame_filter: Optional[str] = None,
+        marker_radius: float = 1,
+        name: Optional[str] = None,
+        **kwargs: Any,
     ):
         self.x = x
         self.y = y
@@ -180,7 +179,7 @@ class Positions(Layer):
                 muted_alpha=0.3,
                 legend_label=metadata.label,
                 name=self.name,
-                **self.kwargs
+                **self.kwargs,
             )
         else:
             fill_color, line_color = (
@@ -196,7 +195,7 @@ class Positions(Layer):
                 radius=self.marker_radius,
                 legend_label=metadata.label,
                 name=self.name,
-                **self.kwargs
+                **self.kwargs,
             )
 
         if self.number is not None:

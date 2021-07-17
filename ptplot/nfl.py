@@ -1,19 +1,13 @@
 from __future__ import annotations
 
 import math
-import matplotlib
 
-import numpy as np
 import pandas as pd
-import warnings
 
 from functools import partial
 
 from ptplot.core import Layer, _Aesthetics, _Metadata
 from typing import TYPE_CHECKING, Callable, Sequence
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
 
 if TYPE_CHECKING:
     from bokeh.models import GlyphRenderer
@@ -76,13 +70,8 @@ class Aesthetics(_Aesthetics):
 class Field(Layer):
     """Generate an NFL field.
 
-    The field is created by first making a pixel image with matplotlib, then loading
-    the rgba array into Bokeh. This is less-than-ideal but was the easiest way to make
-    the numerals that need to be on the field in such a way that they appropriately zoom.
-
     Parameters
     ----------
-    vertical_orientation : If True, the long axis of the field will be the y-axis.
     min_yardline : The minimum yardline to use. Note that the default will cover the whole
         left/bottom endzone with a three-yard buffer.
     max_yardline : The maximum yardline to use. Note that the default will cover the whole
@@ -91,33 +80,20 @@ class Field(Layer):
         representing real positions on the field. This can be useful for plotting multiple
         plays on top of each other.
     sideline_buffer : How many yards of extra space to provide on each sideline.
-    pixels_per_yard : The resolution of the image to generate. Larger numbers are higher resolution,
-        but may lead to larger file sizes and longer load times.
-    kwargs : Any keyword arguments to bokeh.plotting.image_rgba OTHER THAN image, x, y, dw, dh, or level
     """
 
     def __init__(
         self,
-        vertical_orientation: bool = False,
         min_yardline: float = -13,
         max_yardline: float = 113,
         relative_yardlines: bool = False,
         sideline_buffer: float = 3,
-        pixels_per_yard: int = 20,
-        **kwargs
     ):
-        # if vertical_orientation:
-        #     raise NotImplementedError("Don't have that yet")
 
-        self.vertical_orientation = vertical_orientation
         self.min_yardline = min_yardline
         self.max_yardline = max_yardline
         self.relative_yardlines = relative_yardlines
         self.sideline_buffer = sideline_buffer
-        if pixels_per_yard < 10:
-            warnings.warn("Using pixels_per_yard < 10 results in poor image quality an is not recommended")
-        self.pixels_per_yard = pixels_per_yard
-        self.kwargs = kwargs
 
     def get_mappings(self) -> Sequence[str]:
         return []
@@ -130,13 +106,24 @@ class Field(Layer):
         x_yards = self.max_yardline - self.min_yardline
         y_yards = y_max - y_min
 
-        fig, ax = plt.subplots(figsize=(x_yards, y_yards), dpi=self.pixels_per_yard, tight_layout={"pad": 0})
-        ax.set_facecolor("green")
-        ax.set_axis_off()
-        ax.add_artist(ax.patch)
-        ax.patch.set_zorder(-1)
-        ax.set_xlim(self.min_yardline, self.max_yardline)
-        ax.set_ylim(y_min, y_max)
+        # Have to manually set the width here because I can't figure out how to make bokeh scale
+        # to it automatically :(
+        bokeh_figure.width = int(round(bokeh_figure.height * x_yards / y_yards))
+
+        # For some reason you have to manually specify the range bounds here in order to be able
+        # access them downstream (apparently otherwise they're only computed in the JS, see
+        # https://stackoverflow.com/a/50735228/1373664
+        bokeh_figure.x_range.start = self.min_yardline
+        bokeh_figure.x_range.end = self.max_yardline
+        bokeh_figure.y_range.start = y_min
+        bokeh_figure.y_range.end = y_max
+
+        # This is a total kludge to scale font size up and down with plot size,
+        # based on a font size I found to work reasonably well
+        pixels_per_data_unit = bokeh_figure.height / abs(bokeh_figure.y_range.end - bokeh_figure.y_range.start)
+        font_size = pixels_per_data_unit * 3
+
+        bokeh_figure.background_fill_color = "green"
 
         # Set up field lines
         yardlines = _get_vertical_line_locations(
@@ -146,18 +133,37 @@ class Field(Layer):
             min(self.max_yardline, 100 if not self.relative_yardlines else self.max_yardline),
             5,
         )
-        ax.vlines(yardlines, 0, field_width_yards, color="white", lw=20)
+        bokeh_figure.rect(
+            yardlines,
+            [field_width_yards / 2] * len(yardlines),
+            width=0.3,
+            height=field_width_yards,
+            fill_color="white",
+            line_width=0,
+            level="image",
+        )
         if not self.relative_yardlines:
             endzone_yardlines = [yard for yard in [-10, 110] if yard > self.min_yardline and yard < self.max_yardline]
-            ax.vlines(endzone_yardlines, 0, field_width_yards, color="white", lw=40)
-
+            bokeh_figure.rect(
+                endzone_yardlines,
+                [field_width_yards / 2] * len(endzone_yardlines),
+                width=0.6,
+                height=field_width_yards,
+                fill_color="white",
+                line_width=0,
+                level="image",
+            )
         if self.sideline_buffer > 0:
-            ax.hlines(
+            lines_start = max(-10.2, self.min_yardline)
+            lines_end = min(110.2, self.max_yardline)
+            bokeh_figure.rect(
+                [(lines_end + lines_start) / 2] * 2,
                 [0, field_width_yards],
-                max(-10.2, self.min_yardline),
-                min(110.2, self.max_yardline),
-                color="white",
-                lw=40,
+                height=0.6,
+                width=lines_end - lines_start,
+                fill_color="white",
+                line_width=0,
+                level="image",
             )
 
         # Set up numbers
@@ -168,60 +174,36 @@ class Field(Layer):
             min(self.max_yardline, 90 if not self.relative_yardlines else self.max_yardline),
             10,
         )
-
-        number_options = {"fontsize": 150, "color": "white", "weight": "bold", "ha": "center", "va": "center"}
-        for yardline in number_yardlines:
-            number = yardline if self.relative_yardlines else 50 - abs(50 - yardline)
-            string_marker = str(number)
-            string_marker = (
-                f" \u200a{string_marker}" if len(string_marker) == 1 else f"{string_marker[0]}\u200a{string_marker[1]}"
-            )
-            ax.text(yardline, 3, string_marker, **number_options)
-            ax.text(yardline, 50, string_marker, **number_options, rotation=180)
-
-        # Convert the plot to a numpy array, which can then be added to bokeh as a static image
-        fig.canvas.draw()
-        field = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        field = field.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-        plt.close(fig)
-        img = np.empty(field.shape[:2], dtype=np.uint32)
-        field_view = img.view(dtype=np.uint8).reshape((field.shape[0], field.shape[1], 4))
-        field_view[:, :, 0] = field[::-1, :, 0]
-        field_view[:, :, 1] = field[::-1, :, 1]
-        field_view[:, :, 2] = field[::-1, :, 2]
-        field_view[:, :, 3] = 255
-
-        if self.vertical_orientation:
-            bokeh_figure.image_rgba(
-                image=[np.flip(img.T, axis=1)], y=self.min_yardline, x=y_min, dh=x_yards, dw=y_yards, level="image",
-                **self.kwargs
-            )
-        else:
-            bokeh_figure.image_rgba(
-                image=[img], x=self.min_yardline, y=y_min, dw=x_yards, dh=y_yards, level="image",
-                **self.kwargs
-            )
-
-        # Have to manually set the width here because I can't figure out how to make bokeh scale
-        # to it automatically :(
-        if self.vertical_orientation:
-            bokeh_figure.width = int(round(bokeh_figure.height * y_yards / x_yards))
-        else:
-            bokeh_figure.width = int(round(bokeh_figure.height * x_yards / y_yards))
-
-        # For some reason you have to manually specify the range bounds here in order to be able
-        # access them downstream (apparently otherwise they're only computed in the JS, see
-        # https://stackoverflow.com/a/50735228/1373664
-        if self.vertical_orientation:
-            bokeh_figure.y_range.start = self.min_yardline
-            bokeh_figure.y_range.end = self.max_yardline
-            bokeh_figure.x_range.start = y_min
-            bokeh_figure.x_range.end = y_max
-        else:
-            bokeh_figure.x_range.start = self.min_yardline
-            bokeh_figure.x_range.end = self.max_yardline
-            bokeh_figure.y_range.start = y_min
-            bokeh_figure.y_range.end = y_max
+        string_markers = [
+            str(yardline) if self.relative_yardlines else str(50 - abs(50 - yardline)) for yardline in number_yardlines
+        ]
+        string_markers = [
+            f" \u0020\u2005{string_marker}"
+            if len(string_marker) == 1
+            else f"{string_marker[0]}\u2005{string_marker[1]}"
+            for string_marker in string_markers
+        ]
+        bokeh_figure.text(
+            number_yardlines,
+            3,
+            text=string_markers,
+            text_align="center",
+            text_baseline="middle",
+            text_color="white",
+            text_font_size=f"{font_size:.2f}px",
+            level="image",
+        )
+        bokeh_figure.text(
+            number_yardlines,
+            50,
+            text=string_markers,
+            angle=math.pi,
+            text_align="center",
+            text_baseline="middle",
+            text_color="white",
+            text_font_size=f"{font_size:.2f}px",
+            level="image",
+        )
 
         return None
 
