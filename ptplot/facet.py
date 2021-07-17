@@ -9,6 +9,10 @@ from typing import TYPE_CHECKING, Any, Iterator, Optional, Sequence, Tuple
 if TYPE_CHECKING:
     import pandas as pd
 
+    from bokeh.plotting import figure
+    from ptplot import PTPlot
+    from ptplot.core import _Metadata
+
 
 class Facet(Layer):
     """Break a dataset into multiple subplots ("facets").
@@ -42,3 +46,11 @@ class Facet(Layer):
             self.num_row = len(groups)
             self.num_col = 1
         return groups
+
+    def draw(
+        self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
+    ) -> None:
+        # This will get run multiple times per aesthetic, but the title ought to be the same
+        # every time so this should be ok. 
+        facet_value = data[self.facet_mapping].unique()[0]
+        bokeh_figure.title.text = facet_value
