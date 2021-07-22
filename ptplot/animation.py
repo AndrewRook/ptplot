@@ -19,9 +19,7 @@ class Animation(Layer):
         return [self.frame_mapping]
 
     def animate(
-            self,
-            data: pd.DataFrame,
-            layer_animations: Sequence[Callable[[str, Any], CustomJS]]
+        self, data: pd.DataFrame, layer_animations: Sequence[Callable[[str, Any], CustomJS]]
     ) -> Sequence[Widget]:
         min_frame = data[self.frame_mapping].min()
         max_frame = data[self.frame_mapping].max()

@@ -6,7 +6,6 @@ import patsy
 
 from bokeh.plotting import figure
 from bokeh.layouts import Column, gridplot, row
-from bokeh.models import Slider, Toggle, CustomJS
 from typing import TYPE_CHECKING, Any, Callable, Iterator, List, Optional, Tuple, TypeVar, Type
 
 from ptplot.animation import Animation
@@ -15,6 +14,7 @@ from ptplot.facet import Facet
 
 
 if TYPE_CHECKING:
+    from bokeh.models import CustomJS
     from ptplot.core import Layer
 
     layer_type = TypeVar("layer_type", bound=Layer)

@@ -47,9 +47,7 @@ class Facet(Layer):
             self.num_col = 1
         return groups
 
-    def draw(
-        self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
-    ) -> None:
+    def draw(self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata) -> None:
         # This will get run multiple times per aesthetic, but the title ought to be the same
         # every time so this should be ok.
         facet_value = data[self.facet_mapping].unique()[0]
