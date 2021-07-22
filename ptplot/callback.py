@@ -2,6 +2,7 @@ FIND_CURRENT_FRAME = """
 var data = source.data;
 var filter = view.filters[0];
 var indices = [];
+
 for (let i = 0; i < data[frame_column].length; i++) {
     if (data[frame_column][i] == cb_obj.value) {
         indices.push(i);
@@ -11,6 +12,7 @@ for (let i = 0; i < data[frame_column].length; i++) {
         break;
     }
 }
+
 filter.indices = indices;
 source.change.emit();
 """
