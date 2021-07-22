@@ -37,7 +37,7 @@ class Facet(Layer):
         return [self.facet_mapping]
 
     def faceting(self, data: pd.DataFrame) -> Iterator[Tuple[Any, pd.DataFrame]]:
-        groups = data.groupby(self.facet_mapping)
+        groups = data.groupby(self.facet_mapping, sort=False)
         if self.num_col is not None:
             self.num_row = math.ceil(len(groups) / self.num_col)
         elif self.num_row is not None:
@@ -51,6 +51,6 @@ class Facet(Layer):
         self, ptplot: PTPlot, data: pd.DataFrame, bokeh_figure: figure, metadata: _Metadata
     ) -> None:
         # This will get run multiple times per aesthetic, but the title ought to be the same
-        # every time so this should be ok. 
+        # every time so this should be ok.
         facet_value = data[self.facet_mapping].unique()[0]
-        bokeh_figure.title.text = facet_value
+        bokeh_figure.title.text = str(facet_value)
