@@ -12,8 +12,22 @@ if TYPE_CHECKING:
 
 
 class Animation(Layer):
-    def __init__(self, frame_mapping: str):
+    """
+    Animate a given visualization.
+
+    Adding this layer will append a play/pause button and a slider below
+    the visualization, and then automatically connect those buttons to the
+    plot layers used (assuming the layers support animations).
+
+    Parameters
+    ----------
+    frame_mapping : The mapping used to determine the frame of the animation.
+    frame_rate : The number of frames to display per second when using the play/pause
+        button.
+    """
+    def __init__(self, frame_mapping: str, frame_rate: int):
         self.frame_mapping = frame_mapping
+        self.frame_rate = frame_rate
 
     def get_mappings(self) -> Sequence[str]:
         return [self.frame_mapping]
@@ -26,7 +40,9 @@ class Animation(Layer):
         play_pause = Toggle(label="► Play", active=False)
         slider = Slider(start=min_frame, end=max_frame, value=min_frame, step=1, title="Frame")
         play_pause_js = CustomJS(
-            args={"slider": slider, "min_frame": min_frame, "max_frame": max_frame},
+            args={
+                "slider": slider, "min_frame": min_frame,
+                "max_frame": max_frame, "frame_rate": self.frame_rate},
             code="""
         var check_and_iterate = function(){
             var slider_val = slider.value;
@@ -54,7 +70,7 @@ class Animation(Layer):
         }
         else {
             cb_obj.label = '❚❚ Pause';
-            var play_pause_loop = setInterval(check_and_iterate, 100);
+            var play_pause_loop = setInterval(check_and_iterate, 1000 / frame_rate);
         };
                         """,
         )
