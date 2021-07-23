@@ -25,11 +25,11 @@ $ pip install ptplot
 ```
 
 You may wish to install some of `ptplot`'s dependencies
-via conda, specifically `pandas` and `plotly`:
+via conda, specifically `pandas` and `bokeh`:
 
 ```bash
 [After installing conda]
-$ conda create -n player_tracking python=3 pandas plotly
+$ conda create -n player_tracking python=3 pandas bokeh
 $ conda activate player_tracking
 $ pip install ptplot
 ```
@@ -40,12 +40,16 @@ Making your first plot can be as simple as
 
 ```python
 import pandas as pd
-from ptplot import plotting
-data = pd.read_csv([YOUR PLAYER TRACKING DATA])
-fig = plotting.animate_positions(
-    data, "x", "y", "frame"
-)
-fig.show()
+
+from bokeh.plotting import show
+
+from ptplot import PTPlot
+from ptplot.nfl import Field
+from ptplot.plot import Positions
+
+data = pd.read_csv("YOUR PLAYER TRACKING DATA")
+plot = PTPlot(data) + Field() + Positions("X_COORDINATE_COLUMN", "Y_COORDINATE_COLUMN")
+show(plot.draw())
 ```
 
 For additional documentation and examples, check out the
@@ -53,9 +57,10 @@ notebooks in the `notebooks/` directory, which can be viewed
 online with all of the plots correctly rendered via nbviewer:
 1. [Basic Plots](https://nbviewer.jupyter.org/github/AndrewRook/ptplot/blob/main/notebooks/1-Basic_Plots.ipynb)
 2. [Animations](https://nbviewer.jupyter.org/github/AndrewRook/ptplot/blob/main/notebooks/2-Animations.ipynb)
-3. [Tips and Tricks](https://nbviewer.jupyter.org/github/AndrewRook/ptplot/blob/main/notebooks/3-Tips_and_Tricks.ipynb)
+3. [Faceting](https://nbviewer.jupyter.org/github/AndrewRook/ptplot/blob/main/notebooks/3-Faceting.ipynb)
+4. [Tips and Tricks](https://nbviewer.jupyter.org/github/AndrewRook/ptplot/blob/main/notebooks/4-Tips_and_Tricks.ipynb)
 
-Additionally, functions within `ptplot` have docstrings with
+Additionally, layers within `ptplot` have docstrings with
 more usage details. Those can be accessed either by reading the
 source code or running `help([FUNCTION])` inside of Python. 
 

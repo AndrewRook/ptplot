@@ -25,6 +25,10 @@ jobs:
         conda list
         conda info -e
 
+    - name: mypy
+      run: |
+        python -m mypy ptplot/ --exclude _version.py
+
     - name: Black
       run: |
         python -m black -l 120 --check ptplot/
