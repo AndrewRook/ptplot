@@ -25,6 +25,7 @@ class Animation(Layer):
     frame_rate : The number of frames to display per second when using the play/pause
         button.
     """
+
     def __init__(self, frame_mapping: str, frame_rate: int):
         self.frame_mapping = frame_mapping
         self.frame_rate = frame_rate
@@ -40,9 +41,7 @@ class Animation(Layer):
         play_pause = Toggle(label="► Play", active=False)
         slider = Slider(start=min_frame, end=max_frame, value=min_frame, step=1, title="Frame")
         play_pause_js = CustomJS(
-            args={
-                "slider": slider, "min_frame": min_frame,
-                "max_frame": max_frame, "frame_rate": self.frame_rate},
+            args={"slider": slider, "min_frame": min_frame, "max_frame": max_frame, "frame_rate": self.frame_rate},
             code="""
         var check_and_iterate = function(){
             var slider_val = slider.value;
