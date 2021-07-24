@@ -149,12 +149,17 @@ class Positions(Layer):
 
     def set_up_animation(self, graphics: GlyphRenderer) -> Callable[[str, Any], CustomJS]:
         source = graphics.data_source
-        view = graphics.view
+        full_source = ColumnDataSource(source.data)
 
         def animate(frame_column: str, initial_frame: Any) -> CustomJS:
-            initial_indices = np.flatnonzero(source.data[frame_column] == initial_frame)
-            view.filters[0].indices = initial_indices
-            callback = CustomJS(args={"source": source, "view": view, "frame_column": frame_column}, code=self.callback)
+            is_in_initial_frame = source.data[frame_column] <= initial_frame
+            initial_data = {column: source.data[column][is_in_initial_frame] for column in source.data}
+            source.data = initial_data
+
+            callback = CustomJS(
+                args={"source": source, "full_source": full_source, "frame_column": frame_column},
+                code=self.callback
+            )
             return callback
 
         return animate
@@ -168,14 +173,11 @@ class Positions(Layer):
             data = data[data[self.frame_filter]]
         source = ColumnDataSource(data)
 
-        view = CDSView(source=source, filters=[IndexFilter(np.arange(len(data)))])
-
         if metadata.marker is not None:
             graphics = metadata.marker(bokeh_figure)(
                 x=self.x,
                 y=self.y,
                 source=source,
-                view=view,
                 muted_alpha=0.3,
                 legend_label=metadata.label,
                 name=self.name,
@@ -189,7 +191,6 @@ class Positions(Layer):
                 x=self.x,
                 y=self.y,
                 source=source,
-                view=view,
                 fill_color=fill_color,
                 line_color=line_color,
                 radius=self.marker_radius,
@@ -213,7 +214,6 @@ class Positions(Layer):
                 y=self.y,
                 text=self.number,
                 source=source,
-                view=view,
                 text_color=text_color,
                 text_align="center",
                 text_baseline="middle",
