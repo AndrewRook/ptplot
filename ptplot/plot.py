@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import numpy as np
-
-from bokeh.models import ColumnDataSource, CDSView, CustomJS, IndexFilter
+from bokeh.models import ColumnDataSource, CustomJS
 from typing import TYPE_CHECKING, Any, Callable, Sequence, Optional
 
 from ptplot.callback import FIND_CURRENT_FRAME, FIND_ALL_FRAMES_UP_TO_CURRENT_FRAME
@@ -157,8 +155,7 @@ class Positions(Layer):
             source.data = initial_data
 
             callback = CustomJS(
-                args={"source": source, "full_source": full_source, "frame_column": frame_column},
-                code=self.callback
+                args={"source": source, "full_source": full_source, "frame_column": frame_column}, code=self.callback
             )
             return callback
 
