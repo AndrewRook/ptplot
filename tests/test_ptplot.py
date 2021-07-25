@@ -104,3 +104,14 @@ class TestInternalApplyMapping:
         expected = pd.Series([False, False, True, True, True], name=conditional)
         actual = pt._apply_mapping(input_data, conditional)
         pd.testing.assert_series_equal(expected, actual)
+
+    def test_handles_weird_variable_names(self):
+        input_data = pd.DataFrame({
+            "one": [1, 2, 3],
+            "two": [4, 5, 6],
+            "one + two": [7, 8, 9]
+        })
+        arithmetic = "Q('one + two') + 6"
+        expected = pd.Series([13., 14., 15.], name=arithmetic)
+        actual = pt._apply_mapping(input_data, arithmetic)
+        pd.testing.assert_series_equal(expected, actual)
