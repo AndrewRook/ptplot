@@ -17,14 +17,6 @@ class BezierFill(Glyph):
     The y-coordinates of the starting points.
     """)
 
-    x1 = NumberSpec(default=field("x1"), help="""
-    The x-coordinates of the ending points.
-    """)
-
-    y1 = NumberSpec(default=field("y1"), help="""
-    The y-coordinates of the ending points.
-    """)
-
     cx0 = NumberSpec(default=field("cx0"), help="""
     The x-coordinates of first control points.
     """)
