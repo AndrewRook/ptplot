@@ -17,29 +17,29 @@ class BezierFill(Glyph):
     The y-coordinates of the starting points.
     """)
 
-    # x1 = NumberSpec(default=field("x1"), help="""
-    # The x-coordinates of the ending points.
-    # """)
-    #
-    # y1 = NumberSpec(default=field("y1"), help="""
-    # The y-coordinates of the ending points.
-    # """)
-    #
-    # cx0 = NumberSpec(default=field("cx0"), help="""
-    # The x-coordinates of first control points.
-    # """)
-    #
-    # cy0 = NumberSpec(default=field("cy0"), help="""
-    # The y-coordinates of first control points.
-    # """)
-    #
-    # cx1 = NumberSpec(default=field("cx1"), help="""
-    # The x-coordinates of second control points.
-    # """)
-    #
-    # cy1 = NumberSpec(default=field("cy1"), help="""
-    # The y-coordinates of second control points.
-    # """)
+    x1 = NumberSpec(default=field("x1"), help="""
+    The x-coordinates of the ending points.
+    """)
+
+    y1 = NumberSpec(default=field("y1"), help="""
+    The y-coordinates of the ending points.
+    """)
+
+    cx0 = NumberSpec(default=field("cx0"), help="""
+    The x-coordinates of first control points.
+    """)
+
+    cy0 = NumberSpec(default=field("cy0"), help="""
+    The y-coordinates of first control points.
+    """)
+
+    cx1 = NumberSpec(default=field("cx1"), help="""
+    The x-coordinates of second control points.
+    """)
+
+    cy1 = NumberSpec(default=field("cy1"), help="""
+    The y-coordinates of second control points.
+    """)
 
     line_props = Include(LineProps, use_prefix=False, help="""
     The %s values for the Bezier curves.

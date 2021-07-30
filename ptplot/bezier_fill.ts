@@ -108,18 +108,17 @@ export class BezierFillView extends GlyphView {
   }
 
   protected _index_data(index: SpatialIndex): void {
-    //const {data_size, _x0, _y0, _x1, _y1, _cx0, _cy0, _cx1, _cy1} = this
-    const {data_size, _x0, _y0} = this
+    const {data_size, _x0, _y0, _x1, _y1, _cx0, _cy0, _cx1, _cy1} = this
 
     for (let i = 0; i < data_size; i++) {
       const x0_i = _x0[i]
       const y0_i = _y0[i]
-      const x1_i = _x0[i]//_x1[i]
-      const y1_i = _y0[i]//_y1[i]
-      const cx0_i = _x0[i] - 0.5//_cx0[i]
-      const cy0_i = _y0[i] + 2//_cy0[i]
-      const cx1_i = _x0[i] + 0.5//_cx1[i]
-      const cy1_i = _y0[i] + 2//_cy1[i]
+      const x1_i = _x1[i]
+      const y1_i = _y1[i]
+      const cx0_i = _x0[i] - _cx0[i]
+      const cy0_i = _y0[i] + _cy0[i]
+      const cx1_i = _x0[i] + _cx1[i]
+      const cy1_i = _y0[i] + _cy1[i]
 
       if (isNaN(x0_i + y0_i))//isNaN(x0_i + x1_i + y0_i + y1_i + cx0_i + cy0_i + cx1_i + cy1_i))
         index.add_empty()
@@ -144,7 +143,7 @@ export class BezierFillView extends GlyphView {
         const scx1_i = scx1[i]
         const scy1_i = scy1[i]
 
-        if (isNaN(sx0_i + sy0_i))//sx1_i + sy1_i + scx0_i + scy0_i + scx1_i + scy1_i))
+        if (isNaN(sx0_i + sy0_i + sx1_i + sy1_i + scx0_i + scy0_i + scx1_i + scy1_i))
           continue
 
         ctx.beginPath()
@@ -177,12 +176,12 @@ export namespace BezierFill {
   export type Props = Glyph.Props & {
     x0: p.CoordinateSpec
     y0: p.CoordinateSpec
-    //x1: p.CoordinateSpec
-    //y1: p.CoordinateSpec
-    //cx0: p.CoordinateSpec
-    //cy0: p.CoordinateSpec
-    //cx1: p.CoordinateSpec
-    //cy1: p.CoordinateSpec
+    x1: p.CoordinateSpec
+    y1: p.CoordinateSpec
+    cx0: p.CoordinateSpec
+    cy0: p.CoordinateSpec
+    cx1: p.CoordinateSpec
+    cy1: p.CoordinateSpec
   } & Mixins
 
   export type Mixins = LineVector & FillVector
@@ -206,12 +205,12 @@ export class BezierFill extends Glyph {
     this.define<BezierFill.Props>(({}) => ({
       x0:  [ p.XCoordinateSpec, {field: "x0"} ],
       y0:  [ p.YCoordinateSpec, {field: "y0"} ],
-      //x1:  [ p.XCoordinateSpec, {field: "x1"} ],
-      //y1:  [ p.YCoordinateSpec, {field: "y1"} ],
-      //cx0: [ p.XCoordinateSpec, {field: "cx0"} ],
-      //cy0: [ p.YCoordinateSpec, {field: "cy0"} ],
-      //cx1: [ p.XCoordinateSpec, {field: "cx1"} ],
-      //cy1: [ p.YCoordinateSpec, {field: "cy1"} ],
+      x1:  [ p.XCoordinateSpec, {field: "x1"} ],
+      y1:  [ p.YCoordinateSpec, {field: "y1"} ],
+      cx0: [ p.XCoordinateSpec, {field: "cx0"} ],
+      cy0: [ p.YCoordinateSpec, {field: "cy0"} ],
+      cx1: [ p.XCoordinateSpec, {field: "cx1"} ],
+      cy1: [ p.YCoordinateSpec, {field: "cy1"} ],
     }))
     this.mixins<BezierFill.Mixins>([LineVector, FillVector])
   }
