@@ -115,10 +115,10 @@ export class BezierFillView extends GlyphView {
       const y0_i = _y0[i]
       const x1_i = _x1[i]
       const y1_i = _y1[i]
-      const cx0_i = _x0[i] - _cx0[i]
-      const cy0_i = _y0[i] + _cy0[i]
-      const cx1_i = _x0[i] + _cx1[i]
-      const cy1_i = _y0[i] + _cy1[i]
+      const cx0_i = _cx0[i]
+      const cy0_i = _cy0[i]
+      const cx1_i = _cx1[i]
+      const cy1_i = _cy1[i]
 
       if (isNaN(x0_i + y0_i))//isNaN(x0_i + x1_i + y0_i + y1_i + cx0_i + cy0_i + cx1_i + cy1_i))
         index.add_empty()
