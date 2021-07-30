@@ -130,33 +130,32 @@ export class BezierFillView extends GlyphView {
   }
 
   protected _render(ctx: Context2d, indices: number[], data?: BezierFillData): void {
-    if (this.visuals.line.doit) {
-      const {sx0, sy0, sx1, sy1, scx0, scy0, scx1, scy1} = data ?? this
-      console.log(sx0, sy0, sx1, sy1, scx0, scy0, scx1, scy1)
-      for (const i of indices) {
-        const sx0_i = sx0[i]
-        const sy0_i = sy0[i]
-        const sx1_i = sx1[i]
-        const sy1_i = sy1[i]
-        const scx0_i = scx0[i]
-        const scy0_i = scy0[i]
-        const scx1_i = scx1[i]
-        const scy1_i = scy1[i]
+    const {sx0, sy0, sx1, sy1, scx0, scy0, scx1, scy1} = data ?? this
+    for (const i of indices) {
+      const sx0_i = sx0[i]
+      const sy0_i = sy0[i]
+      const sx1_i = sx1[i]
+      const sy1_i = sy1[i]
+      const scx0_i = scx0[i]
+      const scy0_i = scy0[i]
+      const scx1_i = scx1[i]
+      const scy1_i = scy1[i]
 
-        if (isNaN(sx0_i + sy0_i + sx1_i + sy1_i + scx0_i + scy0_i + scx1_i + scy1_i))
-          continue
+      if (isNaN(sx0_i + sy0_i + sx1_i + sy1_i + scx0_i + scy0_i + scx1_i + scy1_i))
+        continue
 
-        ctx.beginPath()
-        ctx.moveTo(sx0_i, sy0_i)
-        ctx.bezierCurveTo(scx0_i, scy0_i, scx1_i, scy1_i, sx1_i, sy1_i)
+      ctx.beginPath()
+      ctx.moveTo(sx0_i, sy0_i)
+      ctx.bezierCurveTo(scx0_i, scy0_i, scx1_i, scy1_i, sx1_i, sy1_i)
 
-        if (this.visuals.fill.doit) {
-          this.visuals.fill.set_vectorize(ctx, i)
-          ctx.fill()
-        }
-
+      if (this.visuals.line.doit) {
         this.visuals.line.set_vectorize(ctx, i)
         ctx.stroke()
+      }
+
+      if (this.visuals.fill.doit) {
+        this.visuals.fill.set_vectorize(ctx, i)
+        ctx.fill()
       }
     }
   }
