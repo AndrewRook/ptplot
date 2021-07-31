@@ -8,6 +8,19 @@ import {generic_line_vector_legend} from "models/glyphs/utils"
 import {inplace} from "core/util/projections"
 import * as p from "core/properties"
 
+//function _calculate_control_points(x: number, y: number, angle: number, radius: number): [number, number, number, number, number, number] {
+//  const x_start_end = x
+//  const y_start_end = y - radius
+//  const cx1 = x - radius / 2
+//  const cx2 = x + radius / 2
+//  const cy = y + radius / 2
+//  const theta = angle * Math.PI / 180.
+//  const cosine_theta = Math.cos(theta)
+//  const sine_theta = Math.sin(theta)
+//  const rotated_x_start_end = x - (y - y_start_end) * sine_theta
+//  const rotated_y_start_end = y - (y - y_start_end) * cosine_theta
+//}
+
 // algorithm adapted from http://stackoverflow.com/a/14429749/3406693
 function _cbb(x0: number, y0: number,
               x1: number, y1: number,
@@ -83,6 +96,10 @@ export type BezierFillData = GlyphData & p.UniformsOf<BezierFill.Mixins> & {
   _cy0: FloatArray
   _cx1: FloatArray
   _cy1: FloatArray
+  _x: FloatArray
+  _y: FloatArray
+  _angle: FloatArray
+  readonly radius: p.UniformScalar<number>
 
   sx0: ScreenArray
   sy0: ScreenArray
@@ -90,6 +107,10 @@ export type BezierFillData = GlyphData & p.UniformsOf<BezierFill.Mixins> & {
   scy0: ScreenArray
   scx1: ScreenArray
   scy1: ScreenArray
+  sx: ScreenArray
+  sy: ScreenArray
+  sangle: ScreenArray
+  sradius: ScreenArray
 }
 
 export interface BezierFillView extends BezierFillData {}
@@ -167,12 +188,14 @@ export namespace BezierFill {
   export type Props = Glyph.Props & {
     x0: p.CoordinateSpec
     y0: p.CoordinateSpec
-//    x1: p.CoordinateSpec
-//    y1: p.CoordinateSpec
     cx0: p.CoordinateSpec
     cy0: p.CoordinateSpec
     cx1: p.CoordinateSpec
     cy1: p.CoordinateSpec
+    x: p.CoordinateSpec
+    y: p.CoordinateSpec
+    angle: p.AngleSpec
+    radius: p.NumberScalar
   } & Mixins
 
   export type Mixins = LineVector & FillVector
@@ -196,12 +219,14 @@ export class BezierFill extends Glyph {
     this.define<BezierFill.Props>(({}) => ({
       x0:  [ p.XCoordinateSpec, {field: "x0"} ],
       y0:  [ p.YCoordinateSpec, {field: "y0"} ],
-//      x1:  [ p.XCoordinateSpec, {field: "x1"} ],
-//      y1:  [ p.YCoordinateSpec, {field: "y1"} ],
       cx0: [ p.XCoordinateSpec, {field: "cx0"} ],
       cy0: [ p.YCoordinateSpec, {field: "cy0"} ],
       cx1: [ p.XCoordinateSpec, {field: "cx1"} ],
       cy1: [ p.YCoordinateSpec, {field: "cy1"} ],
+      x: [ p.XCoordinateSpec, {field: "x"} ],
+      y: [ p.YCoordinateSpec, {field: "y"} ],
+      angle: [ p.AngleSpec, {field: "angle"} ],
+      radius: [p.NumberScalar, 1 ]
     }))
     this.mixins<BezierFill.Mixins>([LineVector, FillVector])
   }

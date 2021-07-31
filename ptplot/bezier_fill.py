@@ -1,4 +1,4 @@
-from bokeh.core.properties import Include, NumberSpec
+from bokeh.core.properties import AngleSpec, DistanceSpec, Include, Float, NumberSpec
 from bokeh.core.property.dataspec import field
 from bokeh.core.property_mixins import LineProps, FillProps
 from bokeh.models import Glyph
@@ -15,6 +15,22 @@ class BezierFill(Glyph):
 
     y0 = NumberSpec(default=field("y0"), help="""
     The y-coordinates of the starting points.
+    """)
+
+    x = NumberSpec(default=field("x"), help="""
+    The x-coordinates of the centers of the circular parts of the teardrops.
+    """)
+
+    y = NumberSpec(default=field("y"), help="""
+    The y-coordinates of the centers of the circular parts of the teardrops.
+    """)
+
+    angle = AngleSpec(default=field("angle"), units_default="deg", help="""
+    The angles the point of the teardrops should be rotated, in degrees.
+    """)
+
+    radius = Float(default=1, help="""
+    The radius of the circular parts of the teardrops in data units.
     """)
 
     cx0 = NumberSpec(default=field("cx0"), help="""
