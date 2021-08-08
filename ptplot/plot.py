@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from bokeh.models import ColumnDataSource, CustomJS
+from bokeh.models import Legend, LegendItem
 from typing import TYPE_CHECKING, Any, Callable, Sequence, Optional
 
 from ptplot.callback import FIND_CURRENT_FRAME, FIND_ALL_FRAMES_UP_TO_CURRENT_FRAME
@@ -209,11 +210,18 @@ class Positions(Layer):
                     fill_color=fill_color,
                     line_color=line_color,
                     radius=self.marker_radius,
-                    #legend_label=metadata.label,
                     name=self.name,
                     **self.kwargs,
                 )
                 graphics = bokeh_figure.add_glyph(source, glyph)
+                legend = bokeh_figure.select(Legend)
+                if len(legend) == 0:
+                    legend = Legend(
+                        items=[(metadata.label, [graphics])]
+                    )
+                    bokeh_figure.add_layout(legend)
+                else:
+                    legend[0].items.append(LegendItem(label=metadata.label, renderers=[graphics]))
 
         if self.number is not None:
             # https://github.com/bokeh/bokeh/issues/2439#issuecomment-447498732
