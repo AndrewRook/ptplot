@@ -118,9 +118,9 @@ export class PickView extends GlyphView {
     //Empirically these values basically "work" to make a pick with the same
     //visual radius as a circle
     const adjusted_radius = this.radius.value * 3.5
-    const xy0_offset = adjusted_radius / 1.5
-    const cx_offset = adjusted_radius / 0.95
-    const cy_offset = adjusted_radius / 1.75
+    const xy0_offset = adjusted_radius / 2.5
+    const cx_offset = adjusted_radius / 1.
+    const cy_offset = adjusted_radius / 2.2
     const length = this._x.length
     this._x0 = new Float64Array(length)
     this._y0 = new Float64Array(length)
@@ -129,8 +129,8 @@ export class PickView extends GlyphView {
     this._cx1 = new Float64Array(length)
     this._cy1 = new Float64Array(length)
     for (let i = 0; i < length; i++) {
-        const cosine = Math.cos(-rot[i] * Math.PI / 180)
-        const sine = Math.sin(-rot[i] * Math.PI / 180)
+        const cosine = -Math.cos(rot[i] * Math.PI / 180)
+        const sine = Math.sin(rot[i] * Math.PI / 180)
 
         this._x0[i] = this._x[i] - xy0_offset * sine
         this._y0[i] = this._y[i] - xy0_offset * cosine
