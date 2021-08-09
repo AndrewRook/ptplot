@@ -5,7 +5,6 @@ import {Rect, FloatArray, ScreenArray} from "core/types"
 import {SpatialIndex} from "core/util/spatial"
 import {Context2d} from "core/util/canvas"
 import {Glyph, GlyphView, GlyphData} from "models/glyphs/glyph"
-import {generic_line_vector_legend} from "models/glyphs/utils"
 import {inplace} from "core/util/projections"
 import * as p from "core/properties"
 
@@ -77,6 +76,31 @@ function _cbb(x0: number, y0: number,
   ]
 }
 
+function _convert_to_bezier(x: number, y: number,
+                            rot: number, xy0_offset: number,
+                            cx_offset: number, cy_offset: number): [number, number, number, number,
+                                                            number, number] {
+  const cosine = -Math.cos(rot * Math.PI / 180)
+  const sine = Math.sin(rot * Math.PI / 180)
+
+  const x0 = x - xy0_offset * sine
+  const y0 = y - xy0_offset * cosine
+  const cx0 = x - cx_offset * cosine + cy_offset * sine
+  const cx1 = x + cx_offset * cosine + cy_offset * sine
+  const cy0 = y + cx_offset * sine + cy_offset * cosine
+  const cy1 = y - cx_offset * sine + cy_offset * cosine
+  return [x0, y0, cx0, cx1, cy0, cy1]
+}
+function _generate_offsets(radius: number): [number, number, number] {
+    //Empirically these values basically "work" to make a pick with the same
+    //visual radius as a circle
+    const adjusted_radius = radius * 3.5
+    const xy0_offset = adjusted_radius / 2.5
+    const cx_offset = adjusted_radius / 1.
+    const cy_offset = adjusted_radius / 2.2
+    return [xy0_offset, cx_offset, cy_offset]
+}
+
 export type PickData = GlyphData & p.UniformsOf<Pick.Mixins> & {
   radius: p.UniformScalar<number>
   _x: FloatArray
@@ -115,12 +139,8 @@ export class PickView extends GlyphView {
 
   protected _set_data(): void {
     const rot = this.rot.array
-    //Empirically these values basically "work" to make a pick with the same
-    //visual radius as a circle
-    const adjusted_radius = this.radius.value * 3.5
-    const xy0_offset = adjusted_radius / 2.5
-    const cx_offset = adjusted_radius / 1.
-    const cy_offset = adjusted_radius / 2.2
+
+    const [xy0_offset, cx_offset, cy_offset] = _generate_offsets(this.radius.value)
     const length = this._x.length
     this._x0 = new Float64Array(length)
     this._y0 = new Float64Array(length)
@@ -129,15 +149,9 @@ export class PickView extends GlyphView {
     this._cx1 = new Float64Array(length)
     this._cy1 = new Float64Array(length)
     for (let i = 0; i < length; i++) {
-        const cosine = -Math.cos(rot[i] * Math.PI / 180)
-        const sine = Math.sin(rot[i] * Math.PI / 180)
-
-        this._x0[i] = this._x[i] - xy0_offset * sine
-        this._y0[i] = this._y[i] - xy0_offset * cosine
-        this._cx0[i] = this._x[i] - cx_offset * cosine + cy_offset * sine
-        this._cx1[i] = this._x[i] + cx_offset * cosine + cy_offset * sine
-        this._cy0[i] = this._y[i] + cx_offset * sine + cy_offset * cosine
-        this._cy1[i] = this._y[i] - cx_offset * sine + cy_offset * cosine
+        [this._x0[i], this._y0[i], this._cx0[i], this._cx1[i], this._cy0[i], this._cy1[i]] = _convert_to_bezier(
+            this._x[i], this._y[i], rot[i], xy0_offset, cx_offset, cy_offset
+        )
     }
     this._x1 = this._x0
     this._y1 = this._y0
@@ -208,8 +222,24 @@ export class PickView extends GlyphView {
     }
   }
 
-  draw_legend_for_index(ctx: Context2d, bbox: Rect, index: number): void {
-    generic_line_vector_legend(this.visuals, ctx, bbox, index)
+  draw_legend_for_index(ctx: Context2d, {x0, y0, x1, y1}: Rect, index: number): void {
+    const len = index + 1
+
+    let sx0 = new Float64Array(len)
+    let sy0 = new Float64Array(len)
+    let scx0 = new Float64Array(len)
+    let scx1 = new Float64Array(len)
+    let scy0 = new Float64Array(len)
+    let scy1 = new Float64Array(len)
+    const [xy0_offset, cx_offset, cy_offset] = _generate_offsets(
+        Math.min(Math.abs(x1 - x0), Math.abs(y1 - y0)) * 0.2
+    );
+    [sx0[index], sy0[index], scx0[index], scx1[index], scy0[index], scy1[index]] = _convert_to_bezier(
+        (x0 + x1) / 2, (y0 + y1) / 2, 0, xy0_offset, cx_offset, cy_offset
+    );
+    const sx1 = sx0;
+    const sy1 = sy0;
+    this._render(ctx, [index], {sx0, sy0, sx1, sy1, scx0, scx1, scy0, scy1} as any)
   }
 
   scenterxy(): [number, number] {
