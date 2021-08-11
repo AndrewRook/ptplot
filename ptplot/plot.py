@@ -120,15 +120,15 @@ class Positions(Layer):
     """
 
     def __init__(
-            self,
-            x: str,
-            y: str,
-            orientation: Optional[str] = None,
-            number: Optional[str] = None,
-            frame_filter: Optional[str] = None,
-            marker_radius: float = 1,
-            name: Optional[str] = None,
-            **kwargs: Any
+        self,
+        x: str,
+        y: str,
+        orientation: Optional[str] = None,
+        number: Optional[str] = None,
+        frame_filter: Optional[str] = None,
+        marker_radius: float = 1,
+        name: Optional[str] = None,
+        **kwargs: Any,
     ):
         self.x = x
         self.y = y
@@ -191,7 +191,6 @@ class Positions(Layer):
                 metadata.color_list if metadata.is_home is True else ["white", metadata.color_list[0]]
             )
             if self.orientation is None:
-                #breakpoint()
                 graphics = bokeh_figure.circle(
                     x=self.x,
                     y=self.y,
@@ -207,8 +206,9 @@ class Positions(Layer):
                 # This is a kludge to let me take advantage of the bokeh all-in-one
                 # figure.plot_name syntax, which handles adding the source, making the legends,
                 # etc.
-                def pick(**kwargs):
+                def pick(**kwargs: Any) -> None:
                     pass
+
                 decorated_pick = glyph_method(Pick)(pick)
 
                 graphics = decorated_pick(

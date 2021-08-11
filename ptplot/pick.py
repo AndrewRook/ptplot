@@ -13,10 +13,18 @@ class Pick(LineGlyph, FillGlyph):
     y = NumberSpec(default=field("y"))
     rot = AngleSpec(default=field("rot"))
 
-    line_props = Include(LineProps, use_prefix=False, help="""
+    line_props = Include(
+        LineProps,
+        use_prefix=False,
+        help="""
     The {prop} values for the Pick.
-    """)
+    """,
+    )
 
-    fill_props = Include(FillProps, use_prefix=False, help="""
+    fill_props = Include(
+        FillProps,
+        use_prefix=False,
+        help="""
     The {prop} values for the Pick.
-    """)
+    """,
+    )
