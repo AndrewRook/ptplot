@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from bokeh.models import ColumnDataSource, CustomJS
-from bokeh.models import Legend, LegendItem
+from bokeh.plotting._decorators import glyph_method
 from typing import TYPE_CHECKING, Any, Callable, Sequence, Optional
 
 from ptplot.callback import FIND_CURRENT_FRAME, FIND_ALL_FRAMES_UP_TO_CURRENT_FRAME
@@ -191,6 +191,7 @@ class Positions(Layer):
                 metadata.color_list if metadata.is_home is True else ["white", metadata.color_list[0]]
             )
             if self.orientation is None:
+                #breakpoint()
                 graphics = bokeh_figure.circle(
                     x=self.x,
                     y=self.y,
@@ -203,25 +204,26 @@ class Positions(Layer):
                     **self.kwargs,
                 )
             else:
-                glyph = Pick(
+                # This is a kludge to let me take advantage of the bokeh all-in-one
+                # figure.plot_name syntax, which handles adding the source, making the legends,
+                # etc.
+                def pick(**kwargs):
+                    pass
+                decorated_pick = glyph_method(Pick)(pick)
+
+                graphics = decorated_pick(
+                    bokeh_figure,
                     x=self.x,
                     y=self.y,
+                    source=source,
                     rot=self.orientation,
                     fill_color=fill_color,
                     line_color=line_color,
+                    legend_label=metadata.label,
                     radius=self.marker_radius,
                     name=self.name,
                     **self.kwargs,
                 )
-                graphics = bokeh_figure.add_glyph(source, glyph)
-                legend = bokeh_figure.select(Legend)
-                if len(legend) == 0:
-                    legend = Legend(
-                        items=[(metadata.label, [graphics])]
-                    )
-                    bokeh_figure.add_layout(legend)
-                else:
-                    legend[0].items.append(LegendItem(label=metadata.label, renderers=[graphics]))
 
         if self.number is not None:
             # https://github.com/bokeh/bokeh/issues/2439#issuecomment-447498732
