@@ -232,7 +232,7 @@ export class PickView extends GlyphView {
     let scy0 = new Float64Array(len)
     let scy1 = new Float64Array(len)
     const [xy0_offset, cx_offset, cy_offset] = _generate_offsets(
-        Math.min(Math.abs(x1 - x0), Math.abs(y1 - y0)) * 0.2
+        Math.min(Math.abs(x1 - x0), Math.abs(y1 - y0)) * 0.3
     );
     [sx0[index], sy0[index], scx0[index], scx1[index], scy0[index], scy1[index]] = _convert_to_bezier(
         (x0 + x1) / 2, (y0 + y1) / 2, 0, xy0_offset, cx_offset, cy_offset
