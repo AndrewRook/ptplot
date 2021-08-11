@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from bokeh.models import ColumnDataSource, CustomJS
+from bokeh.plotting._decorators import glyph_method
 from typing import TYPE_CHECKING, Any, Callable, Sequence, Optional
 
 from ptplot.callback import FIND_CURRENT_FRAME, FIND_ALL_FRAMES_UP_TO_CURRENT_FRAME
 from ptplot.core import Layer, _Metadata
+from ptplot.pick import Pick
 
 if TYPE_CHECKING:
     from bokeh.plotting import figure
@@ -121,6 +123,7 @@ class Positions(Layer):
         self,
         x: str,
         y: str,
+        orientation: Optional[str] = None,
         number: Optional[str] = None,
         frame_filter: Optional[str] = None,
         marker_radius: float = 1,
@@ -129,6 +132,7 @@ class Positions(Layer):
     ):
         self.x = x
         self.y = y
+        self.orientation = orientation
         self.number = number
         self.frame_filter = frame_filter
         self.callback = FIND_CURRENT_FRAME
@@ -139,6 +143,8 @@ class Positions(Layer):
     def get_mappings(self) -> Sequence[str]:
         mappings = [self.x, self.y]
 
+        if self.orientation is not None:
+            mappings += [self.orientation]
         if self.frame_filter is not None:
             mappings += [self.frame_filter]
         if self.number is not None:
@@ -184,17 +190,40 @@ class Positions(Layer):
             fill_color, line_color = (
                 metadata.color_list if metadata.is_home is True else ["white", metadata.color_list[0]]
             )
-            graphics = bokeh_figure.circle(
-                x=self.x,
-                y=self.y,
-                source=source,
-                fill_color=fill_color,
-                line_color=line_color,
-                radius=self.marker_radius,
-                legend_label=metadata.label,
-                name=self.name,
-                **self.kwargs,
-            )
+            if self.orientation is None:
+                graphics = bokeh_figure.circle(
+                    x=self.x,
+                    y=self.y,
+                    source=source,
+                    fill_color=fill_color,
+                    line_color=line_color,
+                    radius=self.marker_radius,
+                    legend_label=metadata.label,
+                    name=self.name,
+                    **self.kwargs,
+                )
+            else:
+                # This is a kludge to let me take advantage of the bokeh all-in-one
+                # figure.plot_name syntax, which handles adding the source, making the legends,
+                # etc.
+                def pick(**kwargs: Any) -> None:
+                    pass
+
+                decorated_pick = glyph_method(Pick)(pick)
+
+                graphics = decorated_pick(
+                    bokeh_figure,
+                    x=self.x,
+                    y=self.y,
+                    source=source,
+                    rot=self.orientation,
+                    fill_color=fill_color,
+                    line_color=line_color,
+                    legend_label=metadata.label,
+                    radius=self.marker_radius,
+                    name=self.name,
+                    **self.kwargs,
+                )
 
         if self.number is not None:
             # https://github.com/bokeh/bokeh/issues/2439#issuecomment-447498732
