@@ -2,9 +2,9 @@ from typing import Any, Dict, Optional, Sequence, Set
 
 
 def _union_kwargs(
-        protected_kwargs: Dict[str: Any],
-        *other_kwargs: Sequence[Dict[str: Any]]
-) -> Dict[str: Any]:
+        protected_kwargs: Dict[str, Any],
+        *other_kwargs: Dict[str, Any]
+) -> Dict[str, Any]:
     """
 
     Parameters
