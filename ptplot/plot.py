@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Callable, Sequence, Optional
 from ptplot.callback import FIND_CURRENT_FRAME, FIND_ALL_FRAMES_UP_TO_CURRENT_FRAME
 from ptplot.core import Layer, _Metadata
 from ptplot.pick import Pick
+from ptplot.utils import _union_kwargs
 
 if TYPE_CHECKING:
     from bokeh.plotting import figure
@@ -74,16 +75,18 @@ class Tracks(Layer):
         all_graphics = []
         for group_name, group_data in groups:
             source = ColumnDataSource(group_data)
-
-            graphics = bokeh_figure.line(
-                x=self.x,
-                y=self.y,
-                source=source,
-                line_color=line_color,
-                legend_label=metadata.label,
-                name=self.name,
-                **self.kwargs,
+            kwargs = _union_kwargs(
+                {
+                    "x": self.x,
+                    "y": self.y,
+                    "source": source,
+                    "line_color": line_color,
+                    "legend_label": metadata.label,
+                    "name": self.name,
+                },
+                self.kwargs,
             )
+            graphics = bokeh_figure.line(**kwargs)
             all_graphics.append(graphics)
 
         if self.animate is False:
@@ -176,32 +179,21 @@ class Positions(Layer):
             data = data[data[self.frame_filter]]
         source = ColumnDataSource(data)
 
+        all_kwargs = _union_kwargs(
+            {"x": self.x, "y": self.y, "source": source, "legend_label": metadata.label, "name": self.name}, self.kwargs
+        )
+
         if metadata.marker is not None:
-            graphics = metadata.marker(bokeh_figure)(
-                x=self.x,
-                y=self.y,
-                source=source,
-                muted_alpha=0.3,
-                legend_label=metadata.label,
-                name=self.name,
-                **self.kwargs,
-            )
+            graphics = metadata.marker(bokeh_figure)(**all_kwargs)
         else:
             fill_color, line_color = (
                 metadata.color_list if metadata.is_home is True else ["white", metadata.color_list[0]]
             )
+            player_kwargs = _union_kwargs(
+                {"fill_color": fill_color, "line_color": line_color, "radius": self.marker_radius}, all_kwargs
+            )
             if self.orientation is None:
-                graphics = bokeh_figure.circle(
-                    x=self.x,
-                    y=self.y,
-                    source=source,
-                    fill_color=fill_color,
-                    line_color=line_color,
-                    radius=self.marker_radius,
-                    legend_label=metadata.label,
-                    name=self.name,
-                    **self.kwargs,
-                )
+                graphics = bokeh_figure.circle(**player_kwargs)
             else:
                 # This is a kludge to let me take advantage of the bokeh all-in-one
                 # figure.plot_name syntax, which handles adding the source, making the legends,
