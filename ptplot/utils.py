@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Sequence, Set
+from typing import Any, Dict
 
 
 def _union_kwargs(protected_kwargs: Dict[str, Any], *other_kwargs: Dict[str, Any]) -> Dict[str, Any]:
