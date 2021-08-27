@@ -203,19 +203,8 @@ class Positions(Layer):
 
                 decorated_pick = glyph_method(Pick)(pick)
 
-                graphics = decorated_pick(
-                    bokeh_figure,
-                    x=self.x,
-                    y=self.y,
-                    source=source,
-                    rot=self.orientation,
-                    fill_color=fill_color,
-                    line_color=line_color,
-                    legend_label=metadata.label,
-                    radius=self.marker_radius,
-                    name=self.name,
-                    **self.kwargs,
-                )
+                player_kwargs = _union_kwargs({"rot": self.orientation}, player_kwargs)
+                graphics = decorated_pick(bokeh_figure, **player_kwargs)
 
         if self.number is not None:
             # https://github.com/bokeh/bokeh/issues/2439#issuecomment-447498732
