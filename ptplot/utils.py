@@ -1,10 +1,7 @@
 from typing import Any, Dict, Optional, Sequence, Set
 
 
-def _union_kwargs(
-        protected_kwargs: Dict[str, Any],
-        *other_kwargs: Dict[str, Any]
-) -> Dict[str, Any]:
+def _union_kwargs(protected_kwargs: Dict[str, Any], *other_kwargs: Dict[str, Any]) -> Dict[str, Any]:
     """
 
     Parameters
@@ -22,9 +19,7 @@ def _union_kwargs(
     """
     final_kwargs = protected_kwargs
     for other_kwarg_set in other_kwargs:
-        protected_kwargs_intersections = set(
-            protected_kwargs.keys()
-        ).intersection(set(other_kwarg_set.keys()))
+        protected_kwargs_intersections = set(protected_kwargs.keys()).intersection(set(other_kwarg_set.keys()))
         if len(protected_kwargs_intersections) > 0:
             raise KeyError(
                 f"The following keywords are protected and cannot be overridden: {protected_kwargs_intersections}"
