@@ -17,4 +17,3 @@ dependencies:
   - tox==3.21.4
   - pip:
       - svgpathtools==1.4.1
-      - versioneer==0.19
