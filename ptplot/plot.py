@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Sequence, Optional
 
 from ptplot.callback import FIND_CURRENT_FRAME, FIND_ALL_FRAMES_UP_TO_CURRENT_FRAME
 from ptplot.core import Layer, _Metadata
-from ptplot.pick import Pick
+from ptplot.models import Pick
 from ptplot.utils import _union_kwargs
 
 if TYPE_CHECKING:
