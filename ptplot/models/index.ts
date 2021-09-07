@@ -1,1 +1,0 @@
-export {Pick} from "./pick"
