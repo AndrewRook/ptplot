@@ -5,7 +5,6 @@ from bokeh.core.property_mixins import LineProps, FillProps
 
 
 class Pick(LineGlyph, FillGlyph):
-    __implementation__ = "pick.ts"
     _args = ("x", "y", "rot")
 
     radius = NullDistanceSpec()

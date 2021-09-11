@@ -1,12 +1,12 @@
 //All of this adapted from the bokeh bezier glyph
-import {FillVector, LineVector} from "core/property_mixins"
-import * as visuals from "core/visuals"
-import {Rect, FloatArray, ScreenArray} from "core/types"
-import {SpatialIndex} from "core/util/spatial"
-import {Context2d} from "core/util/canvas"
-import {Glyph, GlyphView, GlyphData} from "models/glyphs/glyph"
-import {inplace} from "core/util/projections"
-import * as p from "core/properties"
+import {FillVector, LineVector} from "@bokehjs/core/property_mixins"
+import * as visuals from "@bokehjs/core/visuals"
+import {Rect, FloatArray, ScreenArray} from "@bokehjs/core/types"
+import {SpatialIndex} from "@bokehjs/core/util/spatial"
+import {Context2d} from "@bokehjs/core/util/canvas"
+import {Glyph, GlyphView, GlyphData} from "@bokehjs/models/glyphs/glyph"
+import {inplace} from "@bokehjs/core/util/projections"
+import * as p from "@bokehjs/core/properties"
 
 // algorithm adapted from http://stackoverflow.com/a/14429749/3406693
 function _cbb(x0: number, y0: number,
@@ -271,6 +271,8 @@ export class Pick extends Glyph {
   constructor(attrs?: Partial<Pick.Attrs>) {
     super(attrs)
   }
+
+  __module__ = "ptplot.models.pick"
 
   static init_Pick(): void {
     this.prototype.default_view = PickView
