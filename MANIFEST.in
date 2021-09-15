@@ -1,5 +1,6 @@
 include versioneer.py
 include ptplot/_version.py
+include ptplot/pick.ts
 
 include environment.yml
 include environment_minimum_requirements.yml
