@@ -12,7 +12,8 @@ with open('README.md') as readme_file:
 extras = {
     'dev': [
         'black','notebook', 'flake8', 'mypy', 'pytest', 'pytest-cov', 'tox'
-    ]
+    ],
+    'no_pip_package': ['nodejs']
 }
 
 requirements, extra_requirements = parse_envs.parse_conda_envs(
@@ -20,13 +21,14 @@ requirements, extra_requirements = parse_envs.parse_conda_envs(
     "environment.yml",
     optional_packages=extras
 )
+extra_requirements.pop('no_pip_package', None)
 
 setup(
     author='Andrew Schechtman-Rook',
     author_email='footballastronomer@gmail.com',
     python_requires='>=3.7',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
