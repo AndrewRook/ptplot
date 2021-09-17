@@ -8,7 +8,7 @@ import {Context2d} from "core/util/canvas"
 function _convert_to_bezier(x: number, y: number, radius: number,
                             rot: number): [number, number, number, number,
                                            number, number] {
-
+  //0 degrees is pointing down (in data space), rotation is clockwise
   const [xy0_offset, cx_offset, cy_offset] = _generate_offsets(radius)
 
 
@@ -16,13 +16,14 @@ function _convert_to_bezier(x: number, y: number, radius: number,
   const sine = Math.sin(rot * Math.PI / 180)
 
   const x0 = x - xy0_offset * sine
-  const y0 = y - xy0_offset * cosine
+  const y0 = y + xy0_offset * cosine
   const cx0 = x - cx_offset * cosine + cy_offset * sine
   const cx1 = x + cx_offset * cosine + cy_offset * sine
-  const cy0 = y + cx_offset * sine + cy_offset * cosine
-  const cy1 = y - cx_offset * sine + cy_offset * cosine
+  const cy0 = y - cx_offset * sine - cy_offset * cosine
+  const cy1 = y + cx_offset * sine - cy_offset * cosine
   return [x0, y0, cx0, cx1, cy0, cy1]
 }
+
 function _generate_offsets(radius: number): [number, number, number] {
     //Empirically these values basically "work" to make a pick with the same
     //visual radius as a circle
