@@ -1,8 +1,6 @@
 import * as p from "core/properties"
-//import {LineVector, FillVector, HatchVector} from "core/property_mixins"
 import {Circle, CircleView, CircleData} from "models/glyphs/circle"
 import {Context2d} from "core/util/canvas"
-//import * as visuals from "core/visuals"
 
 
 function _convert_to_bezier(x: number, y: number, radius: number,
@@ -90,9 +88,9 @@ export namespace Pick {
     rot: p.AngleSpec
   }
 
-  export type Mixins = Circle.Mixins//LineVector & FillVector & HatchVector
+  export type Mixins = Circle.Mixins
 
-  export type Visuals = Circle.Visuals// & {line: visuals.LineVector, fill: visuals.FillVector, hatch: visuals.HatchVector}
+  export type Visuals = Circle.Visuals
 
 }
 
@@ -113,6 +111,5 @@ export class Pick extends Circle {
       rot:  [ p.AngleSpec, {field: "rot"} ]
     }))
 
-    //this.mixins<Pick.Mixins>()
   }
 }
