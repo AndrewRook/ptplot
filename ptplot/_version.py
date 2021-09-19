@@ -8,7 +8,6 @@
 # versioneer-0.19 (https://github.com/python-versioneer/python-versioneer)
 
 """Git implementation of _version.py."""
-
 # flake8: noqa
 
 import errno

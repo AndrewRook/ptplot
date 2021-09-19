@@ -2,12 +2,17 @@
 
 ## Installation
 
-Install either with pip using the `[dev]` extras or via the conda
-environment file:
+Install either with the conda
+environment file (strongly recommended) or via pip using the `[dev]` extras:
 ```bash
-$ pip install ptplot[dev]
---OR (Note that this will create your conda env for you)--
+--This uses ssh to clone the repo, feel free to use your protocol of choice--
+$ git clone git@github.com:AndrewRook/ptplot.git
+$ cd ptplot 
 $ conda env create -f environment.yml
+$ conda activate ptplot-dev
+$ pip install -e .
+--OR (Note that you will need to separately install nodejs)--
+$ pip install -e .[dev]
 ```
 
 ## Running tests and style checks
@@ -17,7 +22,7 @@ pass in order for a PR to be merged, so it's valuable to run them
 yourself locally before pushing changes:
 
 ```bash
-$ python -m mypy --exclude _version.py ptplot/ 
+$ python -m mypy ptplot/ 
 $ python -m pytest tests/ ptplot/
 $ python -m black -l 120 ptplot/
 $ python -m flake8 ptplot/
@@ -30,6 +35,10 @@ notebooks. Unfortunately, due to how plotly renders animations,
 the animation notebook is quite large in size. Whenever you
 work with `ptplot` animations in the notebook, please check the
 size of the resulting notebook **before** committing it to the repo.
+
+_Note: When you make an update to any of the custom extensions, you may
+need to [force-reload the notebook pages](https://support.google.com/chrome/thread/16531954/clear-cache-for-specific-website-in-google-chrome?hl=en) in order to clear the cache and
+make Jupyter look for the new JS files._
 
 
 ## Cutting a release
