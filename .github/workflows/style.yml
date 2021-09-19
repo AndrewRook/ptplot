@@ -27,7 +27,7 @@ jobs:
 
     - name: mypy
       run: |
-        python -m mypy ptplot/ --exclude _version.py
+        python -m mypy ptplot/ --exclude ptplot/_version.py
 
     - name: Black
       run: |
