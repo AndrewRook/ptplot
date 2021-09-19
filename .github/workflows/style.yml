@@ -28,7 +28,7 @@ jobs:
 
     - name: mypy
       run: |
-        mypy ptplot/
+        mypy -v ptplot/
 
     - name: Black
       run: |

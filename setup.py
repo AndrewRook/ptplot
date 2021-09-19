@@ -13,7 +13,7 @@ extras = {
     'dev': [
         'black','notebook', 'flake8', 'mypy', 'pytest', 'pytest-cov', 'tox'
     ],
-    'no_pip_package': ['nodejs']
+    'no_pip_package': ['nodejs', 'pip']
 }
 
 requirements, extra_requirements = parse_envs.parse_conda_envs(
