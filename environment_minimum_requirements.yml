@@ -7,7 +7,7 @@ dependencies:
   - bokeh==2.3.3
   - flake8==3.8.4
   - mypy==0.910
-  - nodejs==16.4.1
+  - nodejs==14.17.0
   - notebook==6.2.0
   - numpy==1.19.5
   - pandas==1.2.0
