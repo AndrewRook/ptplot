@@ -24,10 +24,11 @@ jobs:
       run: |
         conda list
         conda info -e
+        which python
 
     - name: mypy
       run: |
-        python -m mypy ptplot/ --exclude ptplot/_version.py
+        mypy ptplot/
 
     - name: Black
       run: |
