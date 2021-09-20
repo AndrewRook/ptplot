@@ -111,6 +111,8 @@ class Positions(Layer):
     ----------
     x : The mapping to be used as the x (horizontal) coordinate for the tracks.
     y : The mapping to be used as the y (vertical) coordinate for the tracks.
+    orientation : If set, the player orientation in degrees, where 0 degrees is facing directly up
+        on the field (ie looking toward the far sideline).
     number : If set, a mapping indicating what text should be shown on top of the markers.
     frame_filter : If set, a True/False mapping of the data used to determine a specific frame
         to display at all times, even if an Animation is set.
